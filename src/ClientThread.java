@@ -17,7 +17,7 @@ public class ClientThread extends Thread{
         try {
             while (true) {
                 String response = input.readLine();
-                System.out.println("[Client] Response: " + response);
+                System.out.println("\n[Client] Response: " + response);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
