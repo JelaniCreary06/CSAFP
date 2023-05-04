@@ -5,8 +5,7 @@ import java.util.Scanner;
 public class MainRunner {
     public static void main(String[]args) throws IOException {
 
-            new ServerConnection(5000).start();
-            new ClientConnection(5000).start();
-            System.out.println(InetAddress.getLocalHost().getHostName());
+            new ServerHandler(5000).start();
+            new ClientHandler(5000, "192.168.1.229").start();
     }
 }
