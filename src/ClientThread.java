@@ -1,3 +1,4 @@
+import javax.print.DocFlavor;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
@@ -6,6 +7,7 @@ import java.io.BufferedReader;
 public class ClientThread extends Thread{
     private Socket socket;
     private BufferedReader input;
+
 
     public ClientThread(Socket socket) throws IOException {
         this.socket = socket;
@@ -17,7 +19,7 @@ public class ClientThread extends Thread{
         try {
             while (true) {
                 String response = input.readLine();
-                System.out.println("\n[Client] Response: " + response);
+                System.out.println("[Client] Received: " + response);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

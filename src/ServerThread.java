@@ -7,7 +7,10 @@ import java.io.PrintWriter;
 
 public class ServerThread extends Thread {
     private Socket socket;
+
+    private BufferedReader input;
     private PrintWriter output;
+
 
     private ArrayList<ServerThread> threadList;
 
@@ -18,20 +21,29 @@ public class ServerThread extends Thread {
     @Override
     public void run() {
         try {
-            BufferedReader input = new BufferedReader( new InputStreamReader(socket.getInputStream()));
+            input = new BufferedReader( new InputStreamReader(socket.getInputStream()));
             output = new PrintWriter(socket.getOutputStream(), true);
 
             while (true) {
                 String outputString = input.readLine();
 
                 if (outputString.equals("x")) break;
-                System.out.println("[Server] Received: " + outputString);
+                System.out.println("[Server] Recieved a message from " +
+                        outputString.substring(0, outputString.indexOf("]")) + ", {" +
+                        outputString.substring(outputString.indexOf("]")+1) + " }");
+                ;
+                sendToClient("Thanks for the message, " + outputString.substring(0, outputString.indexOf("]")) + " - [Server]");
+                sendToAllClients("Message recieved.");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (Exception e) {
             System.out.println("An error has occured \n" + e.getStackTrace());
         }
+    }
+
+    private void sendToClient(String outputString) {
+        output.println(outputString);
     }
 
     private void sendToAllClients(String outputString) {
