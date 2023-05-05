@@ -4,30 +4,28 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Collections;
+import java.util.*;
 
 public class ServerHandler extends Thread {
-    private List<ServerThread> connections = Collections.synchronizedList(new ArrayList<>());
+    private Map<String, ServerThread> connections = new Hashtable<String, ServerThread>();
     private int port;
 
     public ServerHandler(int port) {
         this.port = port;
     }
 
-    public List<ServerThread> getConnections() {
+    public Map<String, ServerThread> getConnections() {
         return this.connections;
     }
 
     @Override
     public void run() {
-        try (ServerSocket serverSocket = new ServerSocket(5000)) {
+        try (ServerSocket serverSocket = new ServerSocket(this.port)) {
             while (true) {
                 Socket socket = serverSocket.accept();
                 ServerHandler.ServerThread serverThread = this.new ServerThread(socket, connections);
 
-                connections.add(serverThread);
+                connections.put(socket.getLocalAddress().getHostAddress(), serverThread);
                 serverThread.start();
             }
         } catch (IOException e) {
@@ -39,13 +37,13 @@ public class ServerHandler extends Thread {
         }
     }
     public class ServerThread extends Thread {
-        private List<ServerThread> connectionsList;
+        private Map<String, ServerThread> connectionsList;
         private Socket socket;
 
         BufferedReader input;
         PrintWriter output;
 
-        public ServerThread(Socket socket, List<ServerThread> connectionsList) {
+        public ServerThread(Socket socket, Map<String, ServerThread> connectionsList) {
             this.socket = socket; this.connectionsList = connectionsList;
         }
 
@@ -69,7 +67,7 @@ public class ServerHandler extends Thread {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } catch (Exception e) {
-                System.out.println("An error has occured \n" + e.getStackTrace());
+                System.out.println("An error has occured \n" + Arrays.toString(e.getStackTrace()));
             }
         }
 
@@ -77,9 +75,9 @@ public class ServerHandler extends Thread {
             output.println(outputString);
         }
 
-        private void sendToAllClients(String outputString) {
-            for (ServerThread serverThread : this.connectionsList) {
-                serverThread.output.println(outputString);
+        private <K, V> void  sendToAllClients(String outputString) {
+            for (var key : connectionsList.keySet()) {
+               connectionsList.get(key).output.println(outputString);
             }
         }
     }

@@ -2,23 +2,25 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Scanner;
 
 public class ClientHandler extends Thread {
-    private int port; private String host;
+    private int port;
+    private String host;
+    public final boolean connectedTOServer[] = {false};
 
     public ClientHandler(int port, String host) {
-        this.port = port; this.host = host;
+        this.port = port;
+        this.host = host;
     }
 
     @Override
     public void run() {
         String exitCmd = "exitcmd";
-        try (Socket socket = new Socket(this.host, this.port)){
-            BufferedReader input = new BufferedReader( new InputStreamReader(socket.getInputStream()));
+        try (Socket socket = new Socket(this.host, this.port)) {
+            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
 
             Scanner scanner = new Scanner(System.in);
@@ -28,9 +30,10 @@ public class ClientHandler extends Thread {
 
             ClientThread clientThread = new ClientThread(socket);
             clientThread.start();
+            connectedTOServer[0] = true;
 
             do {
-                while(clientName.equals("")) {
+                while (clientName.equals("")) {
                     System.out.print("Enter your name: ");
                     userInput = scanner.nextLine();
                     clientName = userInput;
@@ -46,21 +49,22 @@ public class ClientHandler extends Thread {
                 output.println(messageFormat + " " + userInput);
 
 
-
             } while (!userInput.equals(exitCmd));
         } catch (Exception e) {
             System.out.println("Exception occured in ClientRunner: " + Arrays.toString(e.getStackTrace()));
+            this.interrupt();
+            return;
         }
     }
 
-    public class ClientThread extends Thread{
+    public class ClientThread extends Thread {
         private Socket socket;
         private BufferedReader input;
 
 
         public ClientThread(Socket socket) throws IOException {
             this.socket = socket;
-            this.input = new BufferedReader( new InputStreamReader(socket.getInputStream()));
+            this.input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         }
 
         @Override
