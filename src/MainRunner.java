@@ -1,13 +1,11 @@
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
-
-
 public class MainRunner {
-    public static void main(String[]args) throws IOException, InterruptedException {
+    public static void main(String[]args) throws InterruptedException, UnknownHostException {
         String localhostIP = InetAddress.getLocalHost().getHostAddress(),
                 ipSearchFormat = localhostIP.substring(0, localhostIP.lastIndexOf(".")),
                 foundIP[] = { "" };
@@ -52,5 +50,6 @@ public class MainRunner {
             System.out.println("Server started, socket made.");
             System.out.println(connectedClients);
         } else new ClientHandler(Config.MainGamePort.num, foundIP[0]).start();
+
     }
 }
