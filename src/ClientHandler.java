@@ -1,88 +1,84 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Scanner;
 
 public class ClientHandler extends Thread {
-    private int port;
-    private String host;
-    public final boolean connectedTOServer[] = {false};
 
-    public ClientHandler(int port, String host) {
-        this.port = port;
-        this.host = host;
+    private ClientUser clientUser;
+    private Socket socket;
+    private String clientName, host;
+    int port;
+
+    public ClientHandler(String clientName, String host, int port) {
+        this.clientName = clientName; this.host = host; this.port = port;
     }
 
     @Override
     public void run() {
-        String exitCmd = "exitcmd";
-        try (Socket socket = new Socket(this.host, this.port)) {
-            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
+        PrintWriter toServer[] = { null };
+        BufferedReader fromServer[] = { null };
 
-            Scanner scanner = new Scanner(System.in);
+        ObjectOutputStream objectsToServer[] = { null };
+        ObjectInputStream objectsFromServer[] = { null };
 
-            String userInput = "", response = "", clientName = "";
-            boolean sentFirstMessage = false;
-
-            ClientThread clientThread = new ClientThread(socket);
-            clientThread.start();
-            connectedTOServer[0] = true;
-
-            do {
-                while (clientName.equals("")) {
-                    System.out.print("Enter your name: ");
-                    userInput = scanner.nextLine();
-                    clientName = userInput;
-                }
-
-                String messageFormat = (clientName + "]");
-                if (!sentFirstMessage) {
-                    System.out.print("Message: ");
-                    sentFirstMessage = true;
-                }
-                userInput = scanner.nextLine();
-                if (userInput.equals(exitCmd)) break;
-                output.println(messageFormat + " " + userInput);
-
-
-            } while (!userInput.equals(exitCmd));
-        } catch (Exception e) {
-            System.out.println("Exception occured in ClientRunner: " + Arrays.toString(e.getStackTrace()));
-            this.interrupt();
-            return;
-        }
-    }
-
-    public class ClientThread extends Thread {
-        private Socket socket;
-        private BufferedReader input;
-
-
-        public ClientThread(Socket socket) throws IOException {
-            this.socket = socket;
-            this.input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        }
-
-        @Override
-        public void run() {
+        Runnable sendToServer = () -> {
             try {
+                this.socket = new Socket(this.host, this.port);
+                this.clientUser = new ClientUser(this.socket, this.clientName);
+
+                toServer[0] = new PrintWriter(socket.getOutputStream(), true);
+                objectsToServer[0] = new ObjectOutputStream(socket.getOutputStream());
+
+                PrintWriter sendServerStr = (PrintWriter) toServer[0];
+                ObjectOutputStream sendServerObj = (ObjectOutputStream) objectsToServer[0];
+
+                Scanner scanner = new Scanner(System.in);
+
+                do {
+                    String userInput = "";
+
+                    System.out.print("Message: ");
+                    userInput = scanner.nextLine();
+
+                    if (!userInput.equals("")) sendServerObj.writeObject(new Message(this.clientUser, scanner.nextLine()));
+                } while (true);
+
+            } catch (Exception e) {
+                System.out.println("ConnectionError:" + this.host
+                        + ":" + this.port + "::" + Arrays.toString(e.getStackTrace()));
+                this.interrupt();
+                return;
+            }
+        };
+
+        Runnable recieveFromServer = () -> {
+            try {
+                fromServer[0] = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                objectsFromServer[0] = new ObjectInputStream(socket.getInputStream());
+
+                BufferedReader strFromServer = (BufferedReader) fromServer[0];
+                ObjectInputStream objFromServer = (ObjectInputStream) objectsFromServer[0];
+
                 while (true) {
-                    String response = input.readLine();
-                    System.out.println("[Client] Received: " + response);
+                        String strReceived = strFromServer.readLine();
+                        Object objReceived = objFromServer.readObject();
                 }
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                System.out.println("ErrorReadingStringFromServer:" + this.host + ":" + this.port
+                        + "::" + Arrays.toString(e.getStackTrace()));
+            } catch (ClassNotFoundException e) {
+                System.out.println("ErrorReadingClassFromServer:" + this.host + ":" + this.port
+                        + "::" + Arrays.toString(e.getStackTrace()));
             } finally {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                this.interrupt();
+                return;
             }
-        }
+        };
+
+
+        new Thread(sendToServer).start();
+        new Thread(recieveFromServer).start();
     }
 }

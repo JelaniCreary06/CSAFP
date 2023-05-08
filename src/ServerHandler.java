@@ -1,84 +1,105 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
 
 public class ServerHandler extends Thread {
-    private Map<String, ServerThread> connections = new Hashtable<String, ServerThread>();
     private int port;
+
+    Map<String, ClientUser> connectedUsers = new Hashtable<>();
 
     public ServerHandler(int port) {
         this.port = port;
     }
 
-    public Map<String, ServerThread> getConnections() {
-        return this.connections;
+    public Map<String, ClientUser> getConnectedUsers() {
+        return this.connectedUsers;
+    }
+
+    public void objectRecieved(Object obj) {
+        CastBlueprint castObject = (CastBlueprint) obj;
+
+        switch (castObject.className()) {
+            case "ClientUser":
+                ClientUser clientObj = (ClientUser) obj;
+
+                connectedUsers.put(clientObj.name(), clientObj);
+                System.out.println(clientObj.name());
+                break;
+
+            case "Message":
+                Message messageObj = (Message) obj;
+
+                System.out.println(messageObj.content());
+                break;
+            default:
+                System.out.println((String) obj);
+                break;
+        }
     }
 
     @Override
     public void run() {
-        try (ServerSocket serverSocket = new ServerSocket(this.port)) {
-            while (true) {
-                Socket socket = serverSocket.accept();
-                ServerHandler.ServerThread serverThread = this.new ServerThread(socket, connections);
-
-                connections.put(socket.getLocalAddress().getHostAddress(), serverThread);
-                serverThread.start();
-            }
-        } catch (IOException e) {
-            try {
-                throw new IOException(e);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-    }
-    public class ServerThread extends Thread {
-        private Map<String, ServerThread> connectionsList;
-        private Socket socket;
-
-        BufferedReader input;
-        PrintWriter output;
-
-        public ServerThread(Socket socket, Map<String, ServerThread> connectionsList) {
-            this.socket = socket; this.connectionsList = connectionsList;
-        }
-
-        @Override
-        public void run() {
-            try {
-                input = new BufferedReader( new InputStreamReader(socket.getInputStream()));
-                output = new PrintWriter(socket.getOutputStream(), true);
-
+        Runnable setupServer = () -> {
+            try (ServerSocket serverSocket = new ServerSocket(this.port)) {
                 while (true) {
-                    String outputString = input.readLine();
+                    Socket socket = serverSocket.accept();
 
-                    if (outputString.equals("x")) break;
-                    System.out.println("[Server] Recieved a message from " +
-                            outputString.substring(0, outputString.indexOf("]")) + ", {" +
-                            outputString.substring(outputString.indexOf("]")+1) + " }");
-                    ;
-                    sendToClient("Thanks for the message, " + outputString.substring(0, outputString.indexOf("]")) + " - [Server]");
-                    sendToAllClients("Message recieved.");
+                    Runnable clientInteractions = () -> {
+                        try {
+                                BufferedReader strFromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                                PrintWriter sendClientStr = new PrintWriter(socket.getOutputStream(), true);
+
+                                ObjectInputStream objFromClient = new ObjectInputStream(socket.getInputStream());
+                                ObjectOutputStream sendClientObj = new ObjectOutputStream(socket.getOutputStream());
+
+                                Runnable strReceived = () -> {
+                                    while (true) {
+                                        try {
+                                            String receivedStr = strFromClient.readLine();
+
+                                            System.out.println("[Server] " + receivedStr);
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }
+                                };
+                                Runnable objReceived = () -> {
+                                    while (true) {
+                                        try {
+                                            Object receivedObj;
+
+                                                receivedObj = objFromClient.readObject();
+
+                                                objectRecieved(receivedObj);
+
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        } catch (ClassNotFoundException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }
+                                };
+
+                                new Thread(strReceived).start();
+                                new Thread(objReceived).start();
+                        } catch (IOException e) {
+                            System.out.println("IOError:" + this.port + "::" + Arrays.toString(e.getStackTrace()));
+                            this.interrupt();
+                            return;
+                        }
+                    };
+
+                    new Thread(clientInteractions).start();
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             } catch (Exception e) {
-                System.out.println("An error has occured \n" + Arrays.toString(e.getStackTrace()));
+                System.out.println("ErrorWithServerSetup:" + this.port + "::" + Arrays.toString(e.getStackTrace()));
+                this.interrupt();
+                return;
             }
-        }
+        };
 
-        private void sendToClient(String outputString) {
-            output.println(outputString);
-        }
-
-        private <K, V> void  sendToAllClients(String outputString) {
-            for (var key : connectionsList.keySet()) {
-               connectionsList.get(key).output.println(outputString);
-            }
-        }
+        new Thread(setupServer).start();
     }
+
 }

@@ -1,8 +1,15 @@
 public enum Config {
-    MainGamePort(4000);
+    MainGame("Multiplayer Game",
+            4000,
+            "Rob",
+            "add");
 
-    final int num;
-    Config(int num) {
-        this.num = num;
+    String name, testName, newClientCommand;
+    int port;
+
+    Config(String name, int port, String testName, String newClientCommand) {
+        this.name = name; this.port = port;
+        this.testName = testName;
+        this.newClientCommand = newClientCommand;
     }
 }
