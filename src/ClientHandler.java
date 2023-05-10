@@ -6,7 +6,6 @@ import java.util.Scanner;
 
 public class ClientHandler extends Thread {
 
-    private ClientUser clientUser;
     private Socket socket;
     private String clientName, host;
     int port;
@@ -26,23 +25,25 @@ public class ClientHandler extends Thread {
         Runnable sendToServer = () -> {
             try {
                 this.socket = new Socket(this.host, this.port);
-                this.clientUser = new ClientUser(this.socket, this.clientName);
 
                 toServer[0] = new PrintWriter(socket.getOutputStream(), true);
                 objectsToServer[0] = new ObjectOutputStream(socket.getOutputStream());
 
-                PrintWriter sendServerStr = (PrintWriter) toServer[0];
-                ObjectOutputStream sendServerObj = (ObjectOutputStream) objectsToServer[0];
+                PrintWriter sendServerStr = toServer[0];
+                ObjectOutputStream sendServerObj = objectsToServer[0];
+
+                sendServerStr.println(Config.Game.newClientSequence + this.clientName);
 
                 Scanner scanner = new Scanner(System.in);
 
+
                 do {
-                    String userInput = "";
+                    String userInput = "NEWMESSAGEX";
 
                     System.out.print("Message: ");
                     userInput = scanner.nextLine();
 
-                    if (!userInput.equals("")) sendServerObj.writeObject(new Message(this.clientUser, scanner.nextLine()));
+                    if (!userInput.equals("NEWMESSAGEX")) sendServerStr.println(userInput);
                 } while (true);
 
             } catch (Exception e) {

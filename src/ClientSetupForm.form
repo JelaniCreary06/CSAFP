@@ -47,8 +47,9 @@
               <component id="1f3b9" class="javax.swing.JButton" binding="nameInputButton">
                 <constraints/>
                 <properties>
-                  <background color="-13882323"/>
-                  <text value="Button"/>
+                  <background color="-16120477"/>
+                  <foreground color="-1"/>
+                  <text value="Confirm Name"/>
                 </properties>
               </component>
               <grid id="a33ad" binding="extraPanel3" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">

@@ -6,17 +6,18 @@ import java.util.*;
 public class ServerHandler extends Thread {
     private int port;
 
-    Map<String, ClientUser> connectedUsers = new Hashtable<>();
+    Map<String, String> connectedUsers = new Hashtable<>();
 
     public ServerHandler(int port) {
         this.port = port;
     }
 
-    public Map<String, ClientUser> getConnectedUsers() {
+    public Map<String, String> getConnectedUsers() {
         return this.connectedUsers;
     }
 
-    public void objectRecieved(Object obj) {
+    /*
+    public void objectReceived(Object obj) {
         CastBlueprint castObject = (CastBlueprint) obj;
 
         switch (castObject.className()) {
@@ -30,20 +31,36 @@ public class ServerHandler extends Thread {
             case "Message":
                 Message messageObj = (Message) obj;
 
-                System.out.println(messageObj.content());
+                System.out.println("[Server] " + messageObj.content());
                 break;
             default:
                 System.out.println((String) obj);
                 break;
         }
     }
+     */
 
+    public String getCommand(String str) {
+        return str.substring(0, str.indexOf(Config.Game.indentPrefix));
+    }
+
+    public String getData(String str) {
+        return str.substring(str.indexOf(Config.Game.indentPrefix));
+    }
+
+    public void stringReceived(String str) {
+        if (getCommand(str).equals(getCommand(Config.Game.indentPrefix))) {
+            System.out.println("welcome " + getData(str));
+        }
+    }
     @Override
     public void run() {
         Runnable setupServer = () -> {
             try (ServerSocket serverSocket = new ServerSocket(this.port)) {
                 while (true) {
                     Socket socket = serverSocket.accept();
+
+                    connectedUsers.put(socket.getInetAddress().getHostAddress(), "");
 
                     Runnable clientInteractions = () -> {
                         try {
@@ -58,7 +75,7 @@ public class ServerHandler extends Thread {
                                         try {
                                             String receivedStr = strFromClient.readLine();
 
-                                            System.out.println("[Server] " + receivedStr);
+                                            stringReceived(receivedStr);
                                         } catch (IOException e) {
                                             throw new RuntimeException(e);
                                         }
@@ -67,11 +84,9 @@ public class ServerHandler extends Thread {
                                 Runnable objReceived = () -> {
                                     while (true) {
                                         try {
-                                            Object receivedObj;
 
-                                                receivedObj = objFromClient.readObject();
-
-                                                objectRecieved(receivedObj);
+                                                Object obj = objFromClient.readObject();
+                                                System.out.println(obj);
 
                                         } catch (IOException e) {
                                             throw new RuntimeException(e);

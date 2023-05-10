@@ -1,15 +1,17 @@
 public enum Config {
-    MainGame("Multiplayer Game",
+    Game("Multiplayer Game",
             4000,
-            "Rob",
-            "add");
+            "}",
+           "{CLIENT_NEW::}",
+            "Enter your name here: ");
 
-    String name, testName, newClientCommand;
+    final String name, indentPrefix, newClientSequence, nameHolderText;
     int port;
 
-    Config(String name, int port, String testName, String newClientCommand) {
+    Config(String name, int port, String testName, String newClientCommand, String nameHolderText) {
         this.name = name; this.port = port;
-        this.testName = testName;
-        this.newClientCommand = newClientCommand;
+        this.indentPrefix = testName;
+        this.newClientSequence = newClientCommand;
+        this.nameHolderText = nameHolderText;
     }
 }
