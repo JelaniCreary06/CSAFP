@@ -36,6 +36,7 @@ public class ClientHandler extends Thread {
 
                 Scanner scanner = new Scanner(System.in);
 
+                sendServerStr.println(Config.Game.newClientSequence + "" + this.clientName);
 
                 do {
                     String userInput = "NEWMESSAGEX";
@@ -43,7 +44,7 @@ public class ClientHandler extends Thread {
                     System.out.print("Message: ");
                     userInput = scanner.nextLine();
 
-                    if (!userInput.equals("NEWMESSAGEX")) sendServerStr.println(userInput);
+                    if (!userInput.equals("NEWMESSAGEX")) sendServerStr.println(Config.Game.sendMessage + userInput);
                 } while (true);
 
             } catch (Exception e) {

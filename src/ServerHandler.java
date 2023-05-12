@@ -45,12 +45,15 @@ public class ServerHandler extends Thread {
     }
 
     public String getData(String str) {
-        return str.substring(str.indexOf(Config.Game.indentPrefix));
+        return str.substring(str.indexOf(Config.Game.indentPrefix)+1);
     }
 
     public void stringReceived(String str) {
-        if (getCommand(str).equals(getCommand(Config.Game.indentPrefix))) {
+        if (getCommand(str).equals(getCommand(Config.Game.newClientSequence))) {
             System.out.println("welcome " + getData(str));
+        }
+        if (getCommand(str).equals(getCommand(Config.Game.sendMessage))) {
+            System.out.println("[Server]" + getData(str));
         }
     }
     @Override
@@ -81,6 +84,7 @@ public class ServerHandler extends Thread {
                                         }
                                     }
                                 };
+                                /*
                                 Runnable objReceived = () -> {
                                     while (true) {
                                         try {
@@ -95,9 +99,9 @@ public class ServerHandler extends Thread {
                                         }
                                     }
                                 };
+                                 */
 
                                 new Thread(strReceived).start();
-                                new Thread(objReceived).start();
                         } catch (IOException e) {
                             System.out.println("IOError:" + this.port + "::" + Arrays.toString(e.getStackTrace()));
                             this.interrupt();

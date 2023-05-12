@@ -20,6 +20,34 @@ public class MainRunner {
         Map<String, String> connectedClients = null;
         List<ClientHandler> clientCheckThreads = new ArrayList<>(256);
 
+        findHostServer((ArrayList<ClientHandler>) clientCheckThreads, foundIP, ipSearchFormat,localhostIP );
+
+        int secondsWithoutName = 0;
+        while (clientName[0].equals("")) {
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                System.out.println("ErrorWhenAwaitingName::" + Arrays.toString(e.getStackTrace()));
+            }
+            secondsWithoutName++;
+        }
+
+        System.out.println("Name inputted: " + clientName[0]);
+        if (secondsWithoutName > 0) findHostServer((ArrayList<ClientHandler>) clientCheckThreads, foundIP, ipSearchFormat,localhostIP );
+
+        if (foundIP[0].equals("")) {
+            mainServerHandler = new ServerHandler(Config.Game.port);
+            thisClientConnection = new ClientHandler(clientName[0], foundIP[0], Config.Game.port);
+
+            mainServerHandler.start(); thisClientConnection.start();
+
+            connectedClients = mainServerHandler.getConnectedUsers();
+            System.out.println("Server started, socket made.");
+            System.out.println(connectedClients);
+        } else new ClientHandler(clientName[0], foundIP[0], Config.Game.port).start();
+    }
+
+    public static void  findHostServer(ArrayList<ClientHandler> clientCheckThreads, String foundIP[], String ipSearchFormat, String localhostIP) throws InterruptedException {
         for (int i = 0; (i <= 255) && (foundIP[0].equals("")); i++) {
             String hostIP = ipSearchFormat + "." + i;
             if (!hostIP.equals(localhostIP)) {
@@ -45,18 +73,5 @@ public class MainRunner {
         }
 
         for (ClientHandler ch : clientCheckThreads) ch.join();
-
-        if (foundIP[0].equals("")) {
-            mainServerHandler = new ServerHandler(Config.Game.port);
-            thisClientConnection = new ClientHandler("Rob", foundIP[0], Config.Game.port);
-
-            mainServerHandler.start(); thisClientConnection.start();
-
-            connectedClients = mainServerHandler.getConnectedUsers();
-            System.out.println("Server started, socket made.");
-            System.out.println(connectedClients);
-        } else new ClientHandler("Rob", foundIP[0], Config.Game.port).start();
-
-
     }
 }
