@@ -1,3 +1,5 @@
+import com.sun.tools.javac.Main;
+
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -25,6 +27,7 @@ public class ClientHandler extends Thread {
         Runnable sendToServer = () -> {
             try {
                 this.socket = new Socket(this.host, this.port);
+                MainRunner.connectedToServer[0] = true;
 
                 toServer[0] = new PrintWriter(socket.getOutputStream(), true);
                 objectsToServer[0] = new ObjectOutputStream(socket.getOutputStream());

@@ -64,6 +64,7 @@ public class ServerHandler extends Thread {
                     Socket socket = serverSocket.accept();
 
                     connectedUsers.put(socket.getInetAddress().getHostAddress(), "");
+                    MainRunner.connectedToServer[0] = true;
 
                     Runnable clientInteractions = () -> {
                         try {

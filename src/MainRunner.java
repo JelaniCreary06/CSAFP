@@ -6,9 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 public class MainRunner {
+    public static boolean connectedToServer[] = { false };
     public static void main(String[]args) throws InterruptedException, UnknownHostException {
-        String clientName[] = {""};
-        new ClientSetupForm(clientName);
+        String clientName[] = {"rob"};
+        //new ClientSetupForm(clientName);
 
         String localhostIP = InetAddress.getLocalHost().getHostAddress(),
                 ipSearchFormat = localhostIP.substring(0, localhostIP.lastIndexOf(".")),
@@ -20,8 +21,6 @@ public class MainRunner {
         Map<String, String> connectedClients = null;
         List<ClientHandler> clientCheckThreads = new ArrayList<>(256);
 
-        findHostServer((ArrayList<ClientHandler>) clientCheckThreads, foundIP, ipSearchFormat,localhostIP );
-
         int secondsWithoutName = 0;
         while (clientName[0].equals("")) {
             try {
@@ -30,21 +29,41 @@ public class MainRunner {
                 System.out.println("ErrorWhenAwaitingName::" + Arrays.toString(e.getStackTrace()));
             }
             secondsWithoutName++;
+            System.out.println("NONAMEINPUTTED("+secondsWithoutName+")");
         }
 
         System.out.println("Name inputted: " + clientName[0]);
-        if (secondsWithoutName > 0) findHostServer((ArrayList<ClientHandler>) clientCheckThreads, foundIP, ipSearchFormat,localhostIP );
 
-        if (foundIP[0].equals("")) {
-            mainServerHandler = new ServerHandler(Config.Game.port);
-            thisClientConnection = new ClientHandler(clientName[0], foundIP[0], Config.Game.port);
+        boolean ranOnce = false;
+        while (!connectedToServer[0]) {
+            findHostServer((ArrayList<ClientHandler>) clientCheckThreads, foundIP, ipSearchFormat,localhostIP );
 
-            mainServerHandler.start(); thisClientConnection.start();
+            if (!ranOnce) {
+                thisClientConnection = new ClientHandler(clientName[0], foundIP[0], Config.Game.port);
+                thisClientConnection.start();
+                ranOnce = true;
+            }
+            else {
+                mainServerHandler = new ServerHandler(Config.Game.port);
+                thisClientConnection = new ClientHandler(clientName[0], foundIP[0], Config.Game.port);
 
-            connectedClients = mainServerHandler.getConnectedUsers();
-            System.out.println("Server started, socket made.");
-            System.out.println(connectedClients);
-        } else new ClientHandler(clientName[0], foundIP[0], Config.Game.port).start();
+                mainServerHandler.start(); thisClientConnection.start();
+
+                connectedClients = mainServerHandler.getConnectedUsers();
+                System.out.println("Server started, socket made.");
+                System.out.println(connectedClients);
+                ranOnce = true;
+            }
+
+            Thread.sleep(10000);
+            if (!connectedToServer[0] && ranOnce) {
+                thisClientConnection = new ClientHandler(clientName[0], localhostIP, Config.Game.port);
+                thisClientConnection.start();
+            }
+        }
+
+        for (ClientHandler ch : clientCheckThreads) ch.join();
+        System.out.println("Connected to server.");
     }
 
     public static void  findHostServer(ArrayList<ClientHandler> clientCheckThreads, String foundIP[], String ipSearchFormat, String localhostIP) throws InterruptedException {
