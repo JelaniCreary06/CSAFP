@@ -8,8 +8,8 @@ import java.util.Map;
 public class MainRunner {
     public static boolean connectedToServer[] = { false };
     public static void main(String[]args) throws InterruptedException, UnknownHostException {
-        String clientName[] = {"rob"};
-        //new ClientSetupForm(clientName);
+        String clientName[] = {""};
+        new ClientSetupForm(clientName);
 
         String localhostIP = InetAddress.getLocalHost().getHostAddress(),
                 ipSearchFormat = localhostIP.substring(0, localhostIP.lastIndexOf(".")),
