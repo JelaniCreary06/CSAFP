@@ -39,11 +39,6 @@ public class MainRunner {
             findHostServer((ArrayList<ClientHandler>) clientCheckThreads, foundIP, ipSearchFormat,localhostIP );
 
             if (!ranOnce) {
-                thisClientConnection = new ClientHandler(clientName[0], foundIP[0], Config.Game.port);
-                thisClientConnection.start();
-                ranOnce = true;
-            }
-            else {
                 mainServerHandler = new ServerHandler(Config.Game.port);
                 thisClientConnection = new ClientHandler(clientName[0], foundIP[0], Config.Game.port);
 
@@ -52,6 +47,11 @@ public class MainRunner {
                 connectedClients = mainServerHandler.getConnectedUsers();
                 System.out.println("Server started, socket made.");
                 System.out.println(connectedClients);
+                ranOnce = true;
+            }
+            else {
+                thisClientConnection = new ClientHandler(clientName[0], foundIP[0], Config.Game.port);
+                thisClientConnection.start();
                 ranOnce = true;
             }
 
