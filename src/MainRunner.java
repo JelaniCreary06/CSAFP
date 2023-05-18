@@ -39,8 +39,8 @@ public class MainRunner {
             findHostServer((ArrayList<ClientHandler>) clientCheckThreads, foundIP, ipSearchFormat,localhostIP );
 
             if (!ranOnce) {
-                mainServerHandler = new ServerHandler(Config.Game.port);
-                thisClientConnection = new ClientHandler(clientName[0], foundIP[0], Config.Game.port);
+                mainServerHandler = new ServerHandler(Config.PORT);
+                thisClientConnection = new ClientHandler(clientName[0], foundIP[0], Config.PORT);
 
                 mainServerHandler.start(); thisClientConnection.start();
 
@@ -50,14 +50,14 @@ public class MainRunner {
                 ranOnce = true;
             }
             else {
-                thisClientConnection = new ClientHandler(clientName[0], foundIP[0], Config.Game.port);
+                thisClientConnection = new ClientHandler(clientName[0], foundIP[0], Config.PORT);
                 thisClientConnection.start();
                 ranOnce = true;
             }
 
             Thread.sleep(10000);
             if (!connectedToServer[0] && ranOnce) {
-                thisClientConnection = new ClientHandler(clientName[0], localhostIP, Config.Game.port);
+                thisClientConnection = new ClientHandler(clientName[0], localhostIP, Config.PORT);
                 thisClientConnection.start();
             }
         }
@@ -70,10 +70,10 @@ public class MainRunner {
         for (int i = 0; (i <= 255) && (foundIP[0].equals("")); i++) {
             String hostIP = ipSearchFormat + "." + i;
             if (!hostIP.equals(localhostIP)) {
-                ClientHandler ch = new ClientHandler("Rob", hostIP, Config.Game.port) {
+                ClientHandler ch = new ClientHandler("Rob", hostIP, Config.PORT) {
                     @Override
                     public void run() {
-                        try (Socket socket = new Socket(hostIP, Config.Game.port)) {
+                        try (Socket socket = new Socket(hostIP, Config.PORT)) {
                             if (socket.isConnected()) {
                                 foundIP[0] = hostIP;
                                 System.out.println("Socket found.");

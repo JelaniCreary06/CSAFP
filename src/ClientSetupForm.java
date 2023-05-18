@@ -7,7 +7,7 @@ import java.util.EventListener;
 public class ClientSetupForm extends JDialog {
     private JPanel titleBackgroundPanel;
     private JLabel titleLabel;
-    private JButton nameInputButton;
+    private JButton nameInputButton ;
     private JTextField nameInputField;
     private JPanel extraPanel1;
     private JPanel extraPanel2;
@@ -16,9 +16,10 @@ public class ClientSetupForm extends JDialog {
     private JPanel extraPanel5;
 
     public ClientSetupForm(String clientName[]) {
+        String nameHolderText = "Enter name here:";
 
-        this.titleLabel.setText(Config.Game.name);
-        this.nameInputField.setText(Config.Game.nameHolderText);
+        this.titleLabel.setText(Config.GAME_NAME);
+        this.nameInputField.setText(nameHolderText);
         titleBackgroundPanel.setMinimumSize(new Dimension(500, 500));
         this.add(titleBackgroundPanel);
         this.setSize(500, 500);
@@ -28,8 +29,10 @@ public class ClientSetupForm extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource().equals(nameInputButton)) {
                     String name = nameInputField.getText();
-                    if (!name.equals(Config.Game.nameHolderText))
+                    if (!name.equals(nameHolderText)) {
                         clientName[0] = nameInputField.getText();
+                        System.out.println("Name entered: " + clientName[0]);
+                    }
                 }
             }
         };

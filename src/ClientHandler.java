@@ -35,11 +35,9 @@ public class ClientHandler extends Thread {
                 PrintWriter sendServerStr = toServer[0];
                 ObjectOutputStream sendServerObj = objectsToServer[0];
 
-                sendServerStr.println(Config.Game.newClientSequence + this.clientName);
+                sendServerStr.println(Config.NEW_CLIENT + this.clientName);
 
                 Scanner scanner = new Scanner(System.in);
-
-                sendServerStr.println(Config.Game.newClientSequence + "" + this.clientName);
 
                 do {
                     String userInput = "NEWMESSAGEX";
@@ -47,7 +45,7 @@ public class ClientHandler extends Thread {
                     System.out.print("Message: ");
                     userInput = scanner.nextLine();
 
-                    if (!userInput.equals("NEWMESSAGEX")) sendServerStr.println(Config.Game.sendMessage + userInput);
+                    if (!userInput.equals("NEWMESSAGEX")) sendServerStr.println(Config.NEW_MESSAGE + userInput);
                 } while (true);
 
             } catch (Exception e) {

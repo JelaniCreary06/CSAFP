@@ -41,18 +41,18 @@ public class ServerHandler extends Thread {
      */
 
     public String getCommand(String str) {
-        return str.substring(0, str.indexOf(Config.Game.indentPrefix));
+        return str.substring(0, str.indexOf(Config.INDENT_PREFIX));
     }
 
     public String getData(String str) {
-        return str.substring(str.indexOf(Config.Game.indentPrefix)+1);
+        return str.substring(str.indexOf(Config.INDENT_PREFIX)+1);
     }
 
     public void stringReceived(String str) {
-        if (getCommand(str).equals(getCommand(Config.Game.newClientSequence))) {
+        if (getCommand(str).equals(getCommand(Config.INDENT_PREFIX))) {
             System.out.println("welcome " + getData(str));
         }
-        if (getCommand(str).equals(getCommand(Config.Game.sendMessage))) {
+        if (getCommand(str).equals(getCommand(Config.INDENT_PREFIX))) {
             System.out.println("[Server]" + getData(str));
         }
     }
