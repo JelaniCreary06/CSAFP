@@ -49,10 +49,10 @@ public class ServerHandler extends Thread {
     }
 
     public void stringReceived(String str) {
-        if (getCommand(str).equals(getCommand(Config.INDENT_PREFIX))) {
+        if (getCommand(str).equals(getCommand(Config.NEW_CLIENT))) {
             System.out.println("welcome " + getData(str));
         }
-        if (getCommand(str).equals(getCommand(Config.INDENT_PREFIX))) {
+        if (getCommand(str).equals(getCommand(Config.NEW_MESSAGE))) {
             System.out.println("[Server]" + getData(str));
         }
     }

@@ -4,7 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EventListener;
 
-public class ClientSetupForm extends JDialog {
+public class ClientSetupForm extends JFrame {
     private JPanel titleBackgroundPanel;
     private JLabel titleLabel;
     private JButton nameInputButton ;

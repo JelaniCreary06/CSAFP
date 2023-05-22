@@ -1,15 +1,18 @@
+import Player.Player;
+
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 public class MainRunner {
     public static boolean connectedToServer[] = { false };
-    public static void main(String[]args) throws InterruptedException, UnknownHostException {
+    public static void main(String[]args) throws InterruptedException, IOException {
         String clientName[] = {""};
-        new ClientSetupForm(clientName);
+        ClientSetupForm testGUI = new ClientSetupForm(clientName);
+        Player tp = new Player(testGUI);
 
         String localhostIP = InetAddress.getLocalHost().getHostAddress(),
                 ipSearchFormat = localhostIP.substring(0, localhostIP.lastIndexOf(".")),
