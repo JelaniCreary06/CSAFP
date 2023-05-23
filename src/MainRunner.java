@@ -1,5 +1,3 @@
-import Player.Player;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -11,8 +9,7 @@ public class MainRunner {
     public static boolean connectedToServer[] = { false };
     public static void main(String[]args) throws InterruptedException, IOException {
         String clientName[] = {""};
-        ClientSetupForm testGUI = new ClientSetupForm(clientName);
-        Player tp = new Player(testGUI);
+        new ClientSetupForm(clientName);
 
         String localhostIP = InetAddress.getLocalHost().getHostAddress(),
                 ipSearchFormat = localhostIP.substring(0, localhostIP.lastIndexOf(".")),

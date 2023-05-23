@@ -42,4 +42,8 @@ public class ClientSetupForm extends JFrame {
         this.setLocationRelativeTo(null);
         this.setVisible(true);
     }
+
+    public JFrame getFrame() {
+        return this;
+    }
 }
