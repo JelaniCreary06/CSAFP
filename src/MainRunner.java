@@ -8,6 +8,8 @@ import java.util.Map;
 public class MainRunner {
     public static boolean connectedToServer[] = { false };
     public static void main(String[]args) throws InterruptedException, IOException {
+        PlayerTesterRunner.main(new String[]{""});
+        /*
         String clientName[] = {""};
         new ClientSetupForm(clientName);
 
@@ -64,6 +66,8 @@ public class MainRunner {
 
         for (ClientHandler ch : clientCheckThreads) ch.join();
         System.out.println("Connected to server.");
+
+         */
     }
 
     public static void  findHostServer(ArrayList<ClientHandler> clientCheckThreads, String foundIP[], String ipSearchFormat, String localhostIP) throws InterruptedException {
