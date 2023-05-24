@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 
 public class GamePanel extends JPanel implements Runnable {
     final int originalTileSize = 16, scale = 4, FPS = 60;
@@ -14,7 +15,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     private Player player = new Player(this, keyHandler);
 
-    public GamePanel() {
+    public GamePanel() throws IOException {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
