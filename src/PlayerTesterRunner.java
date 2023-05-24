@@ -7,7 +7,7 @@ public class PlayerTesterRunner {
         gameWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         gameWindow.setResizable(false);
 
-        Game screen = new Game();
+        GamePanel screen = new GamePanel();
         gameWindow.add(screen);
         gameWindow.pack();
 

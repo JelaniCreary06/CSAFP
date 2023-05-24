@@ -1,28 +1,23 @@
-import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
-public class Player {
-    private BufferedImage image;
+public class Player extends Entity {
+    private GamePanel gamePanel;
+    private KeyHandler keyHandler;
 
-    private JFrame frame;
+    public Player(GamePanel gamePanel, KeyHandler keyHandler) {
+        this.gamePanel = gamePanel; this.keyHandler = keyHandler;
+        this.x = 100; this.y = 100; this.speed = 4;
+    }
 
-    public Player(JFrame frame) throws IOException {
-        image = ImageIO.read(new File("src/PlayerSprites/EnchantressWalk1.png"));
-        this.frame = frame;
+    public void update() {
+        if (keyHandler.upPressed) this.y -= this.speed;
+        else if (keyHandler.downPressed) this.y += this.speed;
+        else if (keyHandler.leftPressed) this.x -= this.speed;
+        else if (keyHandler.rightPressed) this.x += this.speed;
+    }
 
-        JPanel panel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                g.drawImage(image, 0, 0, null);
-            }
-        };
-
-        frame.add(panel);
-
+    public void draw(Graphics2D g2) {
+        g2.setColor(Color.white);
+        g2.fillRect(this.x, this.y, gamePanel.tileSize, gamePanel.tileSize);
     }
 }
