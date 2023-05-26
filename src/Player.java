@@ -66,14 +66,13 @@ public class Player extends Entity {
             System.out.println("WalkingRight+::" + this.x +";" + this.y);
         }
         else {
-            currentCharacterFrame = rightSideFrames[0][idleFrameToLoad];
             if (idleConsec == 12) {
                 if (keyHandler.direction.equals(Config.RIGHT)) {
                     if (idleFrameToLoad == rightAnimLength - 2) idleFrameToLoad = 0;
                     if (rightSideFrames[0][idleFrameToLoad] == null) idleFrameToLoad = 0;
                 }
+
                 currentCharacterFrame = rightSideFrames[0][idleFrameToLoad];
-                System.out.println(idleFrameToLoad);
                 idleFrameToLoad++;
                 idleConsec = 0;
             }
