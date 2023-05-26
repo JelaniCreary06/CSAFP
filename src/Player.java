@@ -13,12 +13,12 @@ public class Player extends Entity {
     private KeyHandler keyHandler;
 
     private BufferedImage currentCharacterFrame;
-    private BufferedImage rightSideFrames[][];
+    private BufferedImage[][] rightSideFrames, leftSideFrames, upSideFrames, downSideFrames;
 
     private String character = "Warrior";
 
 
-    int rightAnimLength;
+    int rightAnimLength, leftAnimLength, downAnimLength, upAnimLength;
 
     public Player(GamePanel gamePanel, KeyHandler keyHandler) throws IOException, InterruptedException {
         this.gamePanel = gamePanel; this.keyHandler = keyHandler;
@@ -29,25 +29,37 @@ public class Player extends Entity {
         System.out.println("All frames loaded.");
 
         rightAnimLength = rightSideFrames[0].length;
+        downAnimLength = downSideFrames[0].length;
     }
 
+    public void draw(Graphics2D g2) {
+        g2.setColor(Color.white);
+        g2.drawImage(currentCharacterFrame, this.x, this.y, null);
+        //g2.fillRect(this.x, this.y, gamePanel.tileSize, gamePanel.tileSize);
+    }
 
-    int idleFrameToLoad = 0, rightWalkFrame = 0, leftWalkFrame = 0,
-            currentFrame = 0, updateOn = 0, normalUpdate = 5, idleUpdate = 12;
+    int idleFrameToLoad = 0, rightWalkFrame = 0, leftWalkFrame = 0, downWalkFrame = 0, upWalkFrame = 0;
 
-    int idleConsec = 0, rightWalkConsec = 0;
+    int idleConsec = 0, rightWalkConsec = 0, downWalkConsec = 0, upWalkConsec = 0;
 
 
     public void update() {
-        currentFrame++;
+        int currentIdle = idleConsec, currentRightWalk = rightWalkConsec;
 
         if (keyHandler.upPressed) {
-            updateOn = normalUpdate; idleFrameToLoad = 0;
             this.y -= this.speed;
         }
         else if (keyHandler.downPressed)  {
-            updateOn = normalUpdate; idleFrameToLoad = 0;
-            this.y += this.speed;
+            this.y += this.speed; idleFrameToLoad = 0;
+
+            if (downWalkConsec == 5) {
+                downWalkConsec = 0;
+                downWalkFrame++;
+                if (downWalkFrame >= downAnimLength) downWalkFrame = 0;
+                if (downSideFrames[1][downWalkFrame] == null) downWalkFrame = 0;
+            }
+            currentCharacterFrame = downSideFrames[1][downWalkFrame];
+            downWalkConsec++;
         }
         else if (keyHandler.leftPressed) {
             this.x -= this.speed;
@@ -63,43 +75,50 @@ public class Player extends Entity {
             }
             currentCharacterFrame = rightSideFrames[1][rightWalkFrame];
             rightWalkConsec++;
-            System.out.println("WalkingRight+::" + this.x +";" + this.y);
         }
         else {
             if (idleConsec == 12) {
+                if (idleFrameToLoad == rightAnimLength) idleFrameToLoad = 0;
                 if (keyHandler.direction.equals(Config.RIGHT)) {
-                    if (idleFrameToLoad == rightAnimLength - 2) idleFrameToLoad = 0;
                     if (rightSideFrames[0][idleFrameToLoad] == null) idleFrameToLoad = 0;
+                    currentCharacterFrame = rightSideFrames[0][idleFrameToLoad];
                 }
-
-                currentCharacterFrame = rightSideFrames[0][idleFrameToLoad];
+                if (keyHandler.direction.equals(Config.DOWN)) {
+                    if (downSideFrames[0][idleFrameToLoad] == null) idleFrameToLoad = 0;
+                    currentCharacterFrame = downSideFrames[0][idleFrameToLoad];
+                }
+                if (keyHandler.direction.equals(Config.UP)) {
+                    if (upSideFrames[0][idleFrameToLoad] == null) idleFrameToLoad = 0;
+                    currentCharacterFrame = upSideFrames[0][idleFrameToLoad];
+                }
                 idleFrameToLoad++;
                 idleConsec = 0;
             }
             idleConsec++;
         }
+
+        if (idleConsec == currentIdle) {
+            idleFrameToLoad = 0; idleConsec = 0;
+        }
+        if (rightWalkConsec == currentRightWalk) {
+            rightWalkFrame = 0; rightWalkConsec = 0;
+        }
     }
 
-    public void draw(Graphics2D g2) {
-        g2.setColor(Color.white);
-        g2.drawImage(currentCharacterFrame, this.x, this.y, null);
-        //g2.fillRect(this.x, this.y, gamePanel.tileSize, gamePanel.tileSize);
+    public void moveDirection(String direction) {
+
     }
 
 
     public void loadCharacterFrames(String characterName) throws IOException, InterruptedException {
-        final String endFormat = ".png", absolutePath = "src/PlayerSprites/" + characterName,
-                rightFramesPath = absolutePath + "/Right", rightWalkPath = rightFramesPath + "/Walk", rightIdlePath = rightFramesPath + "/Idle",
-
-                leftFramesPath = absolutePath + "/Left",
-                upFramesPath = absolutePath + "/Up", downFramesPath = absolutePath + "/Down";
+        final String absolutePath = "src/PlayerSprites/" + characterName;
 
         Runnable loadRightSideFrames = () -> {
             List<BufferedImage> idleFrames, walkFrames;
 
             try {
-                idleFrames = loadFrames(rightIdlePath, endFormat);
-                walkFrames = loadFrames(rightWalkPath, endFormat);
+                idleFrames = loadFrames(absolutePath, Config.RIGHT, "Idle");
+                walkFrames = loadFrames(absolutePath, Config.RIGHT, "Walk");
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -118,16 +137,91 @@ public class Player extends Entity {
             System.out.println("Right side frames loaded.");
         };
 
-        Thread loadRightFrames = new Thread(loadRightSideFrames);
-        loadRightFrames.start();
+        Runnable loadLeftSideFrames = () -> {
+            List<BufferedImage> idleFrames, walkFrames;
 
-        loadRightFrames.join();
+            try {
+                idleFrames = loadFrames(absolutePath, Config.LEFT, "Idle");
+                walkFrames = loadFrames(absolutePath, Config.LEFT, "Walk");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            int size = Math.max(idleFrames.size(), walkFrames.size());
+            leftSideFrames = new BufferedImage[2][size];
+
+            for (int i = idleFrames.size() - 1; i > -1; i--) {
+                leftSideFrames[0][i] = idleFrames.get(i);
+            }
+
+            for (int i = walkFrames.size() - 1; i > -1; i--) {
+                leftSideFrames[1][i] = walkFrames.get(i);
+            }
+
+            System.out.println("Left frames loaded.");
+        };
+
+        Runnable loadDownFrames = () -> {
+            List<BufferedImage> idleFrames, walkFrames;
+
+            try {
+                idleFrames = loadFrames(absolutePath, Config.DOWN, "Idle");
+                walkFrames = loadFrames(absolutePath, Config.DOWN, "Walk");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            int size = Math.max(idleFrames.size(), walkFrames.size());
+            downSideFrames = new BufferedImage[2][size];
+
+            for (int i = idleFrames.size() - 1; i > -1; i--) {
+                downSideFrames[0][i] = idleFrames.get(i);
+            }
+
+            for (int i = walkFrames.size() - 1; i > -1; i--) {
+                downSideFrames[1][i] = walkFrames.get(i);
+            }
+
+            System.out.println("Down frames loaded.");
+        };
+
+        Runnable loadUpFrames = () -> {
+            List<BufferedImage> idleFrames, walkFrames;
+
+            try {
+                idleFrames = loadFrames(absolutePath, Config.UP, "Idle");
+                walkFrames = loadFrames(absolutePath, Config.UP, "Walk");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            int size = Math.max(idleFrames.size(), walkFrames.size());
+            upSideFrames = new BufferedImage[2][size];
+
+            for (int i = idleFrames.size() - 1; i > -1; i--) {
+                upSideFrames[0][i] = idleFrames.get(i);
+            }
+
+            for (int i = walkFrames.size() - 1; i > -1; i--) {
+                upSideFrames[1][i] = walkFrames.get(i);
+            }
+
+            System.out.println("Up frames loaded.");
+        };
+
+        Thread loadRightFrames = new Thread(loadRightSideFrames), loadLeftFrames = new Thread(loadLeftSideFrames),
+                loadDownFramess = new Thread(loadDownFrames), loadUpFramess = new Thread(loadUpFrames);
+
+
+        loadRightFrames.start(); loadLeftFrames.start(); loadDownFramess.start(); loadUpFramess.start();
+
+        loadRightFrames.join(); loadLeftFrames.join(); loadDownFramess.join(); loadUpFramess.join();
     }
 
-    public ArrayList<BufferedImage> loadFrames(String path, String end) throws IOException {
+    public ArrayList<BufferedImage> loadFrames(String absolutePath, String direction, String animToGet) throws IOException {
         List<BufferedImage> framesToLoad = new ArrayList();
 
-        String animToGet = path.substring(path.lastIndexOf("/")+1),
+        String path = absolutePath + "/" + direction + "/" + animToGet,
                 filesToLoad[] = new File(path).list();
 
         for (String fileName : filesToLoad) framesToLoad.add(ImageIO.read(new File(path + "/" + fileName)));

@@ -4,7 +4,7 @@ import java.lang.module.FindException;
 
 public class KeyHandler implements KeyListener {
     public boolean upPressed, downPressed, leftPressed, rightPressed;
-    public String direction = Config.RIGHT;
+    public String direction = Config.DOWN;
 
     @Override
     public void keyTyped(KeyEvent e) {}
