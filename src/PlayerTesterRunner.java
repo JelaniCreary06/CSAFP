@@ -2,7 +2,7 @@ import javax.swing.*;
 import java.io.IOException;
 
 public class PlayerTesterRunner {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         JFrame gameWindow = new JFrame();
         gameWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         gameWindow.setResizable(false);

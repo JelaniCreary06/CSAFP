@@ -3,9 +3,9 @@ import java.awt.*;
 import java.io.IOException;
 
 public class GamePanel extends JPanel implements Runnable {
-    final int originalTileSize = 16, scale = 4, FPS = 60;
-    final int tileSize = originalTileSize * scale, maxScreenCol = 16, maxScreenRow = 12;
-    final int screenWidth = tileSize * maxScreenCol, screenHeight = tileSize * maxScreenRow;
+    static final int originalTileSize = 16, scale = 4, FPS = Config.FPS;
+    static final int tileSize = originalTileSize * scale, maxScreenCol = 16, maxScreenRow = 12;
+    static final int screenWidth = tileSize * maxScreenCol, screenHeight = tileSize * maxScreenRow;
 
     private Thread gameThread;
     private static volatile boolean gameRunning;
@@ -15,7 +15,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     private Player player = new Player(this, keyHandler);
 
-    public GamePanel() throws IOException {
+    public GamePanel() throws IOException, InterruptedException {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
@@ -29,10 +29,9 @@ public class GamePanel extends JPanel implements Runnable {
 
     @Override
     public void run() {
-        double drawInterval = 1000000000/FPS, nextDrawInterval = System.nanoTime() + drawInterval;
+        double drawInterval = 1000000000/60, nextDrawInterval = System.nanoTime() + drawInterval;
 
         while (gameRunning) {
-            System.out.println("Game running");
             update();
             repaint();
 
@@ -47,6 +46,7 @@ public class GamePanel extends JPanel implements Runnable {
             }
 
             nextDrawInterval += drawInterval;
+
         }
     }
 
