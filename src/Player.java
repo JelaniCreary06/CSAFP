@@ -29,7 +29,9 @@ public class Player extends Entity {
         System.out.println("All frames loaded.");
 
         rightAnimLength = rightSideFrames[0].length;
+        leftAnimLength = leftSideFrames[0].length;
         downAnimLength = downSideFrames[0].length;
+        upAnimLength = upSideFrames[0].length;
     }
 
     public void draw(Graphics2D g2) {
@@ -40,14 +42,22 @@ public class Player extends Entity {
 
     int idleFrameToLoad = 0, rightWalkFrame = 0, leftWalkFrame = 0, downWalkFrame = 0, upWalkFrame = 0;
 
-    int idleConsec = 0, rightWalkConsec = 0, downWalkConsec = 0, upWalkConsec = 0;
+    int idleConsec = 0, rightWalkConsec = 0, leftWalkConsec, downWalkConsec = 0, upWalkConsec = 0;
 
 
     public void update() {
-        int currentIdle = idleConsec, currentRightWalk = rightWalkConsec;
 
         if (keyHandler.upPressed) {
-            this.y -= this.speed;
+            this.y -= this.speed; idleFrameToLoad = 0;
+
+            if (upWalkConsec == 5) {
+                upWalkConsec = 0;
+                upWalkFrame++;
+                if (upWalkFrame >= upAnimLength) upWalkFrame = 0;
+                if (upSideFrames[1][upWalkFrame] == null) upWalkFrame = 0;
+            }
+            currentCharacterFrame = upSideFrames[1][upWalkFrame];
+            upWalkConsec++;
         }
         else if (keyHandler.downPressed)  {
             this.y += this.speed; idleFrameToLoad = 0;
@@ -62,7 +72,16 @@ public class Player extends Entity {
             downWalkConsec++;
         }
         else if (keyHandler.leftPressed) {
-            this.x -= this.speed;
+            this.x -= this.speed; idleFrameToLoad = 0;
+
+            if (leftWalkConsec == 5) {
+                leftWalkConsec = 0;
+                leftWalkFrame++;
+                if (leftWalkFrame >= leftAnimLength) leftWalkFrame = 0;
+                if (leftSideFrames[1][leftWalkFrame] == null) leftWalkFrame = 0;
+            }
+            currentCharacterFrame = leftSideFrames[1][leftWalkFrame];
+            leftWalkConsec++;
         }
         else if (keyHandler.rightPressed) {
             this.x += this.speed; idleFrameToLoad = 0;
@@ -83,6 +102,10 @@ public class Player extends Entity {
                     if (rightSideFrames[0][idleFrameToLoad] == null) idleFrameToLoad = 0;
                     currentCharacterFrame = rightSideFrames[0][idleFrameToLoad];
                 }
+                if (keyHandler.direction.equals(Config.LEFT)) {
+                    if (leftSideFrames[0][idleFrameToLoad] == null) idleFrameToLoad = 0;
+                    currentCharacterFrame = leftSideFrames[0][idleFrameToLoad];
+                }
                 if (keyHandler.direction.equals(Config.DOWN)) {
                     if (downSideFrames[0][idleFrameToLoad] == null) idleFrameToLoad = 0;
                     currentCharacterFrame = downSideFrames[0][idleFrameToLoad];
@@ -96,17 +119,6 @@ public class Player extends Entity {
             }
             idleConsec++;
         }
-
-        if (idleConsec == currentIdle) {
-            idleFrameToLoad = 0; idleConsec = 0;
-        }
-        if (rightWalkConsec == currentRightWalk) {
-            rightWalkFrame = 0; rightWalkConsec = 0;
-        }
-    }
-
-    public void moveDirection(String direction) {
-
     }
 
 

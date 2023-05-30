@@ -3,8 +3,8 @@ import java.awt.*;
 import java.io.IOException;
 
 public class GamePanel extends JPanel implements Runnable {
-    static final int originalTileSize = 16, scale = 4, FPS = Config.FPS;
-    static final int tileSize = originalTileSize * scale, maxScreenCol = 16, maxScreenRow = 12;
+    static final int originalTileSize = 16, scale = 3, FPS = Config.FPS;
+    public static final int tileSize = originalTileSize * scale, maxScreenCol = 16, maxScreenRow = 12;
     static final int screenWidth = tileSize * maxScreenCol, screenHeight = tileSize * maxScreenRow;
 
     private Thread gameThread;
@@ -14,6 +14,7 @@ public class GamePanel extends JPanel implements Runnable {
     private volatile int playerX = 100, playerY = 100, playerSpeed = 4;
 
     private Player player = new Player(this, keyHandler);
+    TileManager tileManager = new TileManager(this);
 
     public GamePanel() throws IOException, InterruptedException {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -57,7 +58,10 @@ public class GamePanel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D)g;
+        tileManager.draw(g2);
         player.draw(g2);
         g2.dispose();
     }
+
+    public int getTileSize() { return tileSize; }
 }
