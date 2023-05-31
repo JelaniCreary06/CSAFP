@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -8,8 +9,6 @@ import java.util.Map;
 public class MainRunner {
     public static boolean connectedToServer[] = { false };
     public static void main(String[]args) throws InterruptedException, IOException {
-        PlayerTesterRunner.main(new String[]{""});
-        /*
         String clientName[] = {""};
         new ClientSetupForm(clientName);
 
@@ -20,7 +19,7 @@ public class MainRunner {
         ClientHandler thisClientConnection = null;
         ServerHandler mainServerHandler = null;
 
-        Map<String, String> connectedClients = null;
+        Map<Socket, Player> connectedClients = null;
         List<ClientHandler> clientCheckThreads = new ArrayList<>(256);
 
         int secondsWithoutName = 0;
@@ -66,8 +65,6 @@ public class MainRunner {
 
         for (ClientHandler ch : clientCheckThreads) ch.join();
         System.out.println("Connected to server.");
-
-         */
     }
 
     public static void  findHostServer(ArrayList<ClientHandler> clientCheckThreads, String foundIP[], String ipSearchFormat, String localhostIP) throws InterruptedException {

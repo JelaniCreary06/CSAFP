@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.awt.event.KeyEvent;
 
 public class Player extends Entity {
     private GamePanel gamePanel;
@@ -15,13 +16,12 @@ public class Player extends Entity {
     private BufferedImage currentCharacterFrame;
     private BufferedImage[][] rightSideFrames, leftSideFrames, upSideFrames, downSideFrames;
 
-    private String character = "Warrior";
-
+    private String character = "Warrior", direction;
 
     int rightAnimLength, leftAnimLength, downAnimLength, upAnimLength;
 
-    public Player(GamePanel gamePanel, KeyHandler keyHandler) throws IOException, InterruptedException {
-        this.gamePanel = gamePanel; this.keyHandler = keyHandler;
+    public Player(GamePanel gamePanel) throws IOException, InterruptedException {
+        this.gamePanel = gamePanel;
         this.x = 100; this.y = 100; this.speed = 5;
 
         loadCharacterFrames(character);
@@ -32,8 +32,19 @@ public class Player extends Entity {
         leftAnimLength = leftSideFrames[0].length;
         downAnimLength = downSideFrames[0].length;
         upAnimLength = upSideFrames[0].length;
+
+        direction = Config.DOWN;
     }
 
+    public void updateDirection(String keyPressed) {
+        int keyNum = Integer.parseInt(keyPressed);
+        switch (keyNum) {
+            case KeyEvent.VK_W -> { direction = Config.UP; }
+            case KeyEvent.VK_A -> { direction = Config.LEFT; }
+            case KeyEvent.VK_S -> { direction = Config.DOWN; }
+            case KeyEvent.VK_D -> { direction = Config.RIGHT; }
+        }
+    }
     public void draw(Graphics2D g2) {
         g2.setColor(Color.white);
         g2.drawImage(currentCharacterFrame, this.x, this.y, null);
@@ -47,7 +58,8 @@ public class Player extends Entity {
 
     public void update() {
 
-        if (keyHandler.upPressed) {
+
+        if (direction.equals(Config.UP)) {
             this.y -= this.speed; idleFrameToLoad = 0;
 
             if (upWalkConsec == 5) {
@@ -59,7 +71,7 @@ public class Player extends Entity {
             currentCharacterFrame = upSideFrames[1][upWalkFrame];
             upWalkConsec++;
         }
-        else if (keyHandler.downPressed)  {
+        else if (direction.equals(Config.DOWN))  {
             this.y += this.speed; idleFrameToLoad = 0;
 
             if (downWalkConsec == 5) {
@@ -71,7 +83,7 @@ public class Player extends Entity {
             currentCharacterFrame = downSideFrames[1][downWalkFrame];
             downWalkConsec++;
         }
-        else if (keyHandler.leftPressed) {
+        else if (direction.equals(Config.LEFT)) {
             this.x -= this.speed; idleFrameToLoad = 0;
 
             if (leftWalkConsec == 5) {
@@ -83,7 +95,7 @@ public class Player extends Entity {
             currentCharacterFrame = leftSideFrames[1][leftWalkFrame];
             leftWalkConsec++;
         }
-        else if (keyHandler.rightPressed) {
+        else if (direction.equals(Config.RIGHT)) {
             this.x += this.speed; idleFrameToLoad = 0;
 
             if (rightWalkConsec == 5) {

@@ -1,3 +1,5 @@
+import javax.lang.model.type.ArrayType;
+import javax.swing.*;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -5,15 +7,21 @@ import java.util.*;
 
 public class ServerHandler extends Thread {
     private int port;
+    private GamePanel gamePanel;
 
-    Map<String, String> connectedUsers = new Hashtable<>();
+    Map<Socket, Player> connectedUsers = new Hashtable<>();
+    List<Player> playerList = new ArrayList();
 
     public ServerHandler(int port) {
         this.port = port;
     }
 
-    public Map<String, String> getConnectedUsers() {
+    public Map<Socket, Player> getConnectedUsers() {
         return this.connectedUsers;
+    }
+
+    public ArrayList<Player> getPlayerList() {
+        return (ArrayList<Player>) this.playerList;
     }
 
     /*
@@ -48,39 +56,53 @@ public class ServerHandler extends Thread {
         return str.substring(str.indexOf(Config.INDENT_PREFIX)+1);
     }
 
-    public void stringReceived(String str) {
+    public void stringReceived(String str, Socket currentSocket) throws IOException, InterruptedException {
         if (getCommand(str).equals(getCommand(Config.NEW_CLIENT))) {
-            System.out.println("welcome " + getData(str));
+            Player toAdd = new Player(gamePanel);
+            this.connectedUsers.put(currentSocket, toAdd);
+            this.playerList.add(toAdd);
         }
         if (getCommand(str).equals(getCommand(Config.NEW_MESSAGE))) {
             System.out.println("[Server]" + getData(str));
+        }
+        if (getCommand(str).equals(getCommand(Config.KEY_INPUT))) {
+            connectedUsers.get(currentSocket).updateDirection(getData(str));
         }
     }
     @Override
     public void run() {
         Runnable setupServer = () -> {
             try (ServerSocket serverSocket = new ServerSocket(this.port)) {
-                while (true) {
-                    Socket socket = serverSocket.accept();
+                MainRunner.connectedToServer[0] = true;
+                gamePanel = new GamePanel((Hashtable<Socket, Player>) this.connectedUsers, (ArrayList<Player>) this.playerList);
 
-                    connectedUsers.put(socket.getInetAddress().getHostAddress(), "");
-                    MainRunner.connectedToServer[0] = true;
+                JFrame gameWindow = new JFrame();
+                gameWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                gameWindow.setResizable(false);
+
+                gameWindow.add(gamePanel);
+                gameWindow.pack();
+
+                gameWindow.setLocationRelativeTo(null);
+                gameWindow.setVisible(true);
+                while (true) {
+                    Socket currentSocket = serverSocket.accept();
 
                     Runnable clientInteractions = () -> {
                         try {
-                                BufferedReader strFromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                                PrintWriter sendClientStr = new PrintWriter(socket.getOutputStream(), true);
+                                BufferedReader strFromClient = new BufferedReader(new InputStreamReader(currentSocket.getInputStream()));
+                                PrintWriter sendClientStr = new PrintWriter(currentSocket.getOutputStream(), true);
 
-                                ObjectInputStream objFromClient = new ObjectInputStream(socket.getInputStream());
-                                ObjectOutputStream sendClientObj = new ObjectOutputStream(socket.getOutputStream());
+                                ObjectInputStream objFromClient = new ObjectInputStream(currentSocket.getInputStream());
+                                ObjectOutputStream sendClientObj = new ObjectOutputStream(currentSocket.getOutputStream());
 
                                 Runnable strReceived = () -> {
                                     while (true) {
                                         try {
                                             String receivedStr = strFromClient.readLine();
 
-                                            stringReceived(receivedStr);
-                                        } catch (IOException e) {
+                                            stringReceived(receivedStr, currentSocket);
+                                        } catch (IOException | InterruptedException e) {
                                             throw new RuntimeException(e);
                                         }
                                     }

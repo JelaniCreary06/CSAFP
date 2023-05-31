@@ -37,6 +37,13 @@ public class ClientHandler extends Thread {
 
                 sendServerStr.println(Config.NEW_CLIENT + this.clientName);
 
+                KeyHandler clientKeyHandler[] = new KeyHandler[1];
+
+
+                new Thread( () -> {
+                    clientKeyHandler[0] = new KeyHandler(toServer[0]);
+                }).start();
+
                 Scanner scanner = new Scanner(System.in);
 
                 do {

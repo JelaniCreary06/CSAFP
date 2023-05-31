@@ -1,6 +1,10 @@
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
 
 public class GamePanel extends JPanel implements Runnable {
     static final int originalTileSize = 16, scale = 3, FPS = Config.FPS;
@@ -10,18 +14,20 @@ public class GamePanel extends JPanel implements Runnable {
     private Thread gameThread;
     private static volatile boolean gameRunning;
 
-    private KeyHandler keyHandler = new KeyHandler();
     private volatile int playerX = 100, playerY = 100, playerSpeed = 4;
 
-    private Player player = new Player(this, keyHandler);
+    private Hashtable<Socket, Player> playerHashtable;
+    private ArrayList<Player> playerArrayList;
     TileManager tileManager = new TileManager(this);
 
-    public GamePanel() throws IOException, InterruptedException {
+    public GamePanel(Hashtable<Socket, Player> playerHashtable, ArrayList<Player> playerArrayList) throws IOException, InterruptedException {
+        this.playerHashtable = playerHashtable;
+        this.playerArrayList = playerArrayList;
+
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
 
-        this.addKeyListener(keyHandler);
         this.setFocusable(true);
 
         new Thread(this).start();
@@ -52,14 +58,13 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void update() {
-        player.update();
+        for (Player plr : playerArrayList) plr.update();
     }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D)g;
-        tileManager.draw(g2);
-        player.draw(g2);
+        for (Player plr : playerArrayList) plr.draw(g2);
         g2.dispose();
     }
 
