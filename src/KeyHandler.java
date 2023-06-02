@@ -31,6 +31,7 @@ public class KeyHandler implements KeyListener {
                 toServer.println(Config.KEY_INPUT + KeyEvent.VK_D);
             }
         }
+
     }
 
     @Override
