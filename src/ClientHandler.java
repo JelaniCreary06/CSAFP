@@ -1,22 +1,32 @@
-import com.sun.tools.javac.Main;
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by FernFlower decompiler)
+//
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Scanner;
 
 public class ClientHandler extends Thread {
-
     private Socket socket;
-    private String clientName, host;
-
-    private ArrayList<OtherPlayers> otherPlayers = (ArrayList<OtherPlayers>) MainRunner.otherPlayers;
+    private String clientName;
+    private String host;
+    private ArrayList<OtherPlayers> otherPlayers;
     int port;
 
     public ClientHandler(String clientName, String host, int port) throws IOException {
-        this.clientName = clientName; this.host = host; this.port = port;
+        this.otherPlayers = MainRunner.otherPlayers;
+        this.clientName = clientName;
+        this.host = host;
+        this.port = port;
     }
 
     public Socket getSocket() {
@@ -24,100 +34,73 @@ public class ClientHandler extends Thread {
     }
 
     public String getCommand(String str) {
-        return str.substring(0, str.indexOf(Config.INDENT_PREFIX));
+        return str.substring(0, str.indexOf("}"));
     }
 
     public String getData(String str) {
-        return str.substring(str.indexOf(Config.INDENT_PREFIX)+1);
+        return str.substring(str.indexOf("}") + 1);
     }
 
-
-    @Override
     public void run() {
-        PrintWriter toServer[] = { null };
-        BufferedReader fromServer[] = { null };
+        PrintWriter[] toServer = new PrintWriter[]{null};
+        BufferedReader[] fromServer = new BufferedReader[]{null};
+        ObjectOutputStream[] objectsToServer = new ObjectOutputStream[]{null};
+        ObjectInputStream[] objectsFromServer = new ObjectInputStream[]{null};
 
-        ObjectOutputStream objectsToServer[] = { null };
-        ObjectInputStream objectsFromServer[] = { null };
         try {
-            socket = new Socket(this.host, this.port);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            this.socket = new Socket(this.host, this.port);
+        } catch (IOException var7) {
+            throw new RuntimeException(var7);
         }
 
         Runnable sendToServer = () -> {
             try {
                 MainRunner.connectedToServer[0] = true;
-
-                toServer[0] = new PrintWriter(socket.getOutputStream(), true);
-                objectsToServer[0] = new ObjectOutputStream(socket.getOutputStream());
-
+                toServer[0] = new PrintWriter(this.socket.getOutputStream(), true);
+                objectsToServer[0] = new ObjectOutputStream(this.socket.getOutputStream());
                 PrintWriter sendServerStr = toServer[0];
                 ObjectOutputStream sendServerObj = objectsToServer[0];
-
-                sendServerStr.println(Config.NEW_CLIENT + this.clientName);
-
-                KeyHandler clientKeyHandler[] = new KeyHandler[1];
-
-
-                new Thread( () -> {
-                    clientKeyHandler[0] = new KeyHandler(toServer[0]);
-                }).start();
-
-                Scanner scanner = new Scanner(System.in);
-
-                do {
-
-                } while (true);
-
-            } catch (Exception e) {
-                System.out.println("ConnectionError:" + this.host
-                        + ":" + this.port + "::" + Arrays.toString(e.getStackTrace()));
+                sendServerStr.println("{CLIENT_NEW::}" + this.clientName);
+                new Scanner(System.in);
+            } catch (Exception var6) {
+                String var10001 = this.host;
+                System.out.println("ConnectionError:" + var10001 + ":" + this.port + "::" + Arrays.toString(var6.getStackTrace()));
                 this.interrupt();
-                return;
             }
         };
-
         Runnable recieveFromServer = () -> {
             try {
-                fromServer[0] = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                objectsFromServer[0] = new ObjectInputStream(socket.getInputStream());
+                fromServer[0] = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+                objectsFromServer[0] = new ObjectInputStream(this.socket.getInputStream());
+                BufferedReader strFromServer = fromServer[0];
+                ObjectInputStream objFromServer = objectsFromServer[0];
 
-                BufferedReader strFromServer = (BufferedReader) fromServer[0];
-                ObjectInputStream objFromServer = (ObjectInputStream) objectsFromServer[0];
-
-                while (true) {
-                        String strReceived = strFromServer.readLine();
-
-                        if (strReceived.indexOf(Config.COORDINATE) != 0) {
-                            for (OtherPlayers plr : otherPlayers) {
-                                if (plr.getInetAddress().equals(strReceived.substring(0, strReceived.indexOf("]")))) {
-                                    String split[] = strReceived.substring(strReceived.indexOf(Config.COORDINATE)+1).split("%%:");
-
-                                    plr.setCoordinates(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
-                                    plr.updateFrame(split[2], Integer.parseInt(split[3]));
-
-                                    //this.x + "%%:" + this.y + "%%:"
-                                    //                + keyHandler.direction + "%%:" + currentFrameNum;
-                                }
-                                break;
+                while(true) {
+                    String strReceived = strFromServer.readLine();
+                    if (strReceived.indexOf("{LOCATION::NEW}") != 0) {
+                        Iterator var6 = this.otherPlayers.iterator();
+                        if (var6.hasNext()) {
+                            OtherPlayers plr = (OtherPlayers)var6.next();
+                            if (plr.getInetAddress().equals(strReceived.substring(0, strReceived.indexOf("]")))) {
+                                String[] split = strReceived.substring(strReceived.indexOf("{LOCATION::NEW}") + 1).split("%%:");
+                                plr.setCoordinates(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
+                                plr.updateFrame(split[2], Integer.parseInt(split[3]));
                             }
                         }
-                        if (strReceived.indexOf(Config.NEW_CLIENT) != 0) {
-                            otherPlayers.add(new OtherPlayers("Warrior", getData(strReceived)));
-                        }
+                    }
 
+                    if (strReceived.indexOf("{CLIENT_NEW::}") != 0) {
+                        this.otherPlayers.add(new OtherPlayers("Warrior", this.getData(strReceived)));
+                    }
                 }
-            } catch (IOException e) {
-                System.out.println("ErrorReadingStringFromServer:" + this.host + ":" + this.port
-                        + "::" + Arrays.toString(e.getStackTrace()));
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+            } catch (IOException var9) {
+                String var10001 = this.host;
+                System.out.println("ErrorReadingStringFromServer:" + var10001 + ":" + this.port + "::" + Arrays.toString(var9.getStackTrace()));
+            } catch (InterruptedException var10) {
+                throw new RuntimeException(var10);
             }
         };
-
-
-        new Thread(sendToServer).start();
-        new Thread(recieveFromServer).start();
+        (new Thread(sendToServer)).start();
+        (new Thread(recieveFromServer)).start();
     }
 }

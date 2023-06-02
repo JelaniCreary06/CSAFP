@@ -9,9 +9,6 @@ public class KeyHandler implements KeyListener {
 
     private PrintWriter toServer;
 
-    public KeyHandler(PrintWriter toServer) {
-        this.toServer = toServer;
-    }
     @Override
     public void keyTyped(KeyEvent e) {}
 
@@ -19,16 +16,12 @@ public class KeyHandler implements KeyListener {
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_W -> { upPressed = true; direction = Config.UP;
-                toServer.println(Config.KEY_INPUT + KeyEvent.VK_W);
             }
             case KeyEvent.VK_S -> { downPressed = true; direction = Config.DOWN;
-                toServer.println(Config.KEY_INPUT + KeyEvent.VK_S);
             }
             case KeyEvent.VK_A -> { leftPressed = true; direction = Config.LEFT;
-                toServer.println(Config.KEY_INPUT + KeyEvent.VK_A);
             }
             case KeyEvent.VK_D -> { rightPressed = true; direction = Config.RIGHT;
-                toServer.println(Config.KEY_INPUT + KeyEvent.VK_D);
             }
         }
 

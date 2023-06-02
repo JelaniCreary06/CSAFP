@@ -11,8 +11,6 @@ public class MainRunner {
     public static boolean connectedToServer[] = { false };
     public static ArrayList<OtherPlayers> otherPlayers = new ArrayList();
     public static void main(String[]args) throws InterruptedException, IOException {
-        PlayerTesterRunner.main(new String[]{""});
-
         String clientName[] = {""};
         new ClientSetupForm(clientName);
 
