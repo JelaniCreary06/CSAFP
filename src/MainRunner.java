@@ -72,7 +72,7 @@ public class MainRunner {
 
 
         KeyHandler keyHandler = new KeyHandler();
-        GamePanel screen = new GamePanel((ArrayList<OtherPlayers>) otherPlayers, "Warrior", thisClientConnection.getSocket(),  keyHandler);
+        GamePanel screen = new GamePanel((ArrayList<OtherPlayers>) otherPlayers, "Warrior", thisClientConnection,  keyHandler);
 
 
         gameWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

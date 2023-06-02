@@ -19,12 +19,12 @@ public class Player extends Entity {
 
     private String character;
 
-    private PrintWriter sendStrToServer;
-
 
     int rightAnimLength, leftAnimLength, downAnimLength, upAnimLength;
 
     int[] consecValueArray = { 0, 0, 0, 0}, animTrackerArray = { 0, 0, 0, 0}, lengthArray;
+
+    private ClientHandler clientHandler;
 
     public Player(String character) throws IOException, InterruptedException {
         this.character = character;
@@ -32,11 +32,10 @@ public class Player extends Entity {
         loadCharacterFrames(character);
 
     }
-    public Player(String character, Socket socket, GamePanel gamePanel, KeyHandler keyHandler) throws IOException, InterruptedException {
-        this.gamePanel = gamePanel; this.keyHandler = keyHandler;
+    public Player(String character, ClientHandler clientHandler, GamePanel gamePanel, KeyHandler keyHandler) throws IOException, InterruptedException {
+        this.gamePanel = gamePanel; this.keyHandler = keyHandler; this.clientHandler = clientHandler;
         this.x = 100; this.y = 100; this.speed = 5;
         this.character = character;
-        sendStrToServer = new PrintWriter(socket.getOutputStream(), true);
 
         loadCharacterFrames(character);
 
@@ -134,7 +133,7 @@ public class Player extends Entity {
 
         String locationString = Config.COORDINATE  + this.x + "%%:" + this.y + "%%:"
                 + keyHandler.direction + "%%:" + currentFrameNum;
-        sendStrToServer.println(locationString);
+        clientHandler.toServer[0].println(locationString);
     }
 
     protected void draw(Graphics2D g2) {

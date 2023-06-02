@@ -20,8 +20,8 @@ public class GamePanel extends JPanel implements Runnable {
 
     private ArrayList<OtherPlayers> otherPlayers;
 
-    public GamePanel(ArrayList<OtherPlayers> otherPlayers, String character, Socket socket, KeyHandler keyHandler) throws IOException, InterruptedException {
-        this.player = new Player(character, socket, this, keyHandler);
+    public GamePanel(ArrayList<OtherPlayers> otherPlayers, String character, ClientHandler clientHandler, KeyHandler keyHandler) throws IOException, InterruptedException {
+        this.player = new Player(character, clientHandler, this, keyHandler);
         this.otherPlayers = otherPlayers;
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);

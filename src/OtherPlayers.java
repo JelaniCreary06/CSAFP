@@ -8,7 +8,6 @@ public class OtherPlayers extends Player {
     }
 
 
-
     public void setCoordinates(int x, int y) {
         this.x = x; this.y = y;
     }

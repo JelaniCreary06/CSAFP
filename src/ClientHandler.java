@@ -22,6 +22,12 @@ public class ClientHandler extends Thread {
     private ArrayList<OtherPlayers> otherPlayers;
     int port;
 
+    PrintWriter[] toServer = new PrintWriter[]{null};
+    BufferedReader[] fromServer = new BufferedReader[]{null};
+    ObjectOutputStream[] objectsToServer = new ObjectOutputStream[]{null};
+    ObjectInputStream[] objectsFromServer = new ObjectInputStream[]{null};
+
+
     public ClientHandler(String clientName, String host, int port) throws IOException {
         this.otherPlayers = MainRunner.otherPlayers;
         this.clientName = clientName;
@@ -42,11 +48,6 @@ public class ClientHandler extends Thread {
     }
 
     public void run() {
-        PrintWriter[] toServer = new PrintWriter[]{null};
-        BufferedReader[] fromServer = new BufferedReader[]{null};
-        ObjectOutputStream[] objectsToServer = new ObjectOutputStream[]{null};
-        ObjectInputStream[] objectsFromServer = new ObjectInputStream[]{null};
-
         try {
             this.socket = new Socket(this.host, this.port);
         } catch (IOException var7) {
