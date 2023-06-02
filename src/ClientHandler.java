@@ -76,8 +76,10 @@ public class ClientHandler extends Thread {
                 BufferedReader strFromServer = fromServer[0];
                 ObjectInputStream objFromServer = objectsFromServer[0];
 
+                String strReceived = "";
                 while(true) {
-                    String strReceived = strFromServer.readLine();
+                    strReceived = strFromServer.readLine();
+
                     if (strReceived.indexOf("{LOCATION::NEW}") != 0) {
                         Iterator var6 = this.otherPlayers.iterator();
                         if (var6.hasNext()) {
@@ -92,9 +94,10 @@ public class ClientHandler extends Thread {
 
                     if (strReceived.indexOf("{CLIENT_NEW::}") != 0) {
                         OtherPlayers newPlr = new OtherPlayers("Warrior", this.getData(strReceived));
-                        MainRunner.gameWindow.add(new GamePanel(newPlr));
                         this.otherPlayers.add(newPlr);
                     }
+
+                    strReceived = "";
                 }
             } catch (IOException var9) {
                 String var10001 = this.host;
