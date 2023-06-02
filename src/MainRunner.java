@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Map;
 public class MainRunner {
     public static boolean connectedToServer[] = { false };
+    public static JFrame gameWindow = new JFrame();
     public static ArrayList<OtherPlayers> otherPlayers = new ArrayList();
     public static void main(String[]args) throws InterruptedException, IOException {
         String clientName[] = {""};
@@ -68,11 +69,12 @@ public class MainRunner {
         for (ClientHandler ch : clientCheckThreads) ch.join();
         System.out.println("Connected to server.");
 
+
+
         KeyHandler keyHandler = new KeyHandler();
         GamePanel screen = new GamePanel((ArrayList<OtherPlayers>) otherPlayers, "Warrior", thisClientConnection.getSocket(),  keyHandler);
 
 
-        JFrame gameWindow = new JFrame();
         gameWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         gameWindow.setResizable(false);
 

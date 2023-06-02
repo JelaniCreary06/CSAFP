@@ -56,7 +56,7 @@ public class Player extends Entity {
 
     int idleConsec = 0, rightWalkConsec = 0, leftWalkConsec, downWalkConsec = 0, upWalkConsec = 0;
 
-    public final void update() {
+    public void update() {
         int currentFrameNum = 0;
 
         if (keyHandler.upPressed) {

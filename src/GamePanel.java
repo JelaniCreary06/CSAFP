@@ -1,3 +1,4 @@
+import javax.print.attribute.standard.MediaSize;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
@@ -33,6 +34,10 @@ public class GamePanel extends JPanel implements Runnable {
         gameRunning = true;
     }
 
+    public GamePanel(OtherPlayers plr) {
+        this.player = plr;
+    }
+
     @Override
     public void run() {
         double drawInterval = 1000000000/60, nextDrawInterval = System.nanoTime() + drawInterval;
@@ -57,13 +62,13 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void update() {
-        player.update();
+
+        if (!(player instanceof OtherPlayers)) player.update();
     }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D)g;
-        for (OtherPlayers plr : otherPlayers) plr.draw(g2);
         player.draw(g2);
         g2.dispose();
     }

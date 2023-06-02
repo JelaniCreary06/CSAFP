@@ -90,7 +90,9 @@ public class ClientHandler extends Thread {
                     }
 
                     if (strReceived.indexOf("{CLIENT_NEW::}") != 0) {
-                        this.otherPlayers.add(new OtherPlayers("Warrior", this.getData(strReceived)));
+                        OtherPlayers newPlr = new OtherPlayers("Warrior", this.getData(strReceived));
+                        MainRunner.gameWindow.add(new GamePanel(newPlr));
+                        this.otherPlayers.add(newPlr);
                     }
                 }
             } catch (IOException var9) {
