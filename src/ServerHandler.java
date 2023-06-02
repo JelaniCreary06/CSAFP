@@ -7,6 +7,7 @@ public class ServerHandler extends Thread {
     private int port;
 
     Map<String, String> connectedUsers = new Hashtable<>();
+    List<Socket> socketList = new ArrayList();
 
     public ServerHandler(int port) {
         this.port = port;
@@ -48,12 +49,28 @@ public class ServerHandler extends Thread {
         return str.substring(str.indexOf(Config.INDENT_PREFIX)+1);
     }
 
-    public void stringReceived(String str) {
+
+    public void stringReceived(Socket sentFrom, String str) {
         if (getCommand(str).equals(getCommand(Config.NEW_CLIENT))) {
-            System.out.println("welcome " + getData(str));
+            sendToOtherClients(sentFrom, Config.NEW_CLIENT + sentFrom.getInetAddress());
         }
         if (getCommand(str).equals(getCommand(Config.NEW_MESSAGE))) {
             System.out.println("[Server]" + getData(str));
+        }
+        if (getCommand(str).equals(getCommand(Config.COORDINATE))) {
+            sendToOtherClients(sentFrom, getData(str));
+        }
+    }
+
+    public void sendToOtherClients(Socket sentFrom, String str) {
+        for (Socket socket : socketList) {
+            if (socket != sentFrom) {
+                try (PrintWriter sendClientStr = new PrintWriter(socket.getOutputStream(), true)){
+                    sendClientStr.println(socket.getInetAddress() + "]" + Config.COORDINATE + str);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
     }
     @Override
@@ -64,6 +81,7 @@ public class ServerHandler extends Thread {
                     Socket socket = serverSocket.accept();
 
                     connectedUsers.put(socket.getInetAddress().getHostAddress(), "");
+                    socketList.add(socket);
                     MainRunner.connectedToServer[0] = true;
 
                     Runnable clientInteractions = () -> {
@@ -79,7 +97,7 @@ public class ServerHandler extends Thread {
                                         try {
                                             String receivedStr = strFromClient.readLine();
 
-                                            stringReceived(receivedStr);
+                                            stringReceived(socket, receivedStr);
                                         } catch (IOException e) {
                                             throw new RuntimeException(e);
                                         }

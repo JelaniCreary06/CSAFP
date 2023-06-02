@@ -4,50 +4,72 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class Player extends Entity {
-    private GamePanel gamePanel;
+    protected GamePanel gamePanel;
     private KeyHandler keyHandler;
 
-    private BufferedImage currentCharacterFrame;
-    private BufferedImage[][] rightSideFrames, leftSideFrames, upSideFrames, downSideFrames;
+    protected BufferedImage currentCharacterFrame;
+    protected BufferedImage[][] rightSideFrames, leftSideFrames, upSideFrames, downSideFrames;
 
-    private String character = "Warrior";
+    private String character;
+
+    private PrintWriter sendStrToServer;
 
 
     int rightAnimLength, leftAnimLength, downAnimLength, upAnimLength;
 
-    public Player(GamePanel gamePanel, KeyHandler keyHandler) throws IOException, InterruptedException {
+    int[] consecValueArray = { 0, 0, 0, 0}, animTrackerArray = { 0, 0, 0, 0}, lengthArray;
+
+    public Player(String character) throws IOException, InterruptedException {
+        this.character = character;
+
+        loadCharacterFrames(character);
+
+    }
+    public Player(String character, Socket socket, GamePanel gamePanel, KeyHandler keyHandler) throws IOException, InterruptedException {
         this.gamePanel = gamePanel; this.keyHandler = keyHandler;
         this.x = 100; this.y = 100; this.speed = 5;
+        this.character = character;
+        sendStrToServer = new PrintWriter(socket.getOutputStream(), true);
 
         loadCharacterFrames(character);
 
         System.out.println("All frames loaded.");
 
+        lengthArray = new int[] { rightSideFrames[0].length, leftSideFrames[0].length,
+                downSideFrames[0].length, upSideFrames[0].length};
+
         rightAnimLength = rightSideFrames[0].length;
+        leftAnimLength = leftSideFrames[0].length;
         downAnimLength = downSideFrames[0].length;
+        upAnimLength = upSideFrames[0].length;
     }
 
-    public void draw(Graphics2D g2) {
-        g2.setColor(Color.white);
-        g2.drawImage(currentCharacterFrame, this.x, this.y, null);
-        //g2.fillRect(this.x, this.y, gamePanel.tileSize, gamePanel.tileSize);
-    }
 
     int idleFrameToLoad = 0, rightWalkFrame = 0, leftWalkFrame = 0, downWalkFrame = 0, upWalkFrame = 0;
 
-    int idleConsec = 0, rightWalkConsec = 0, downWalkConsec = 0, upWalkConsec = 0;
+    int idleConsec = 0, rightWalkConsec = 0, leftWalkConsec, downWalkConsec = 0, upWalkConsec = 0;
 
-
-    public void update() {
-        int currentIdle = idleConsec, currentRightWalk = rightWalkConsec;
+    public final void update() {
+        int currentFrameNum = 0;
 
         if (keyHandler.upPressed) {
-            this.y -= this.speed;
+            this.y -= this.speed; idleFrameToLoad = 0;
+
+            if (upWalkConsec == 5) {
+                upWalkConsec = 0;
+                upWalkFrame++;
+                if (upWalkFrame >= upAnimLength) upWalkFrame = 0;
+                if (upSideFrames[1][upWalkFrame] == null) upWalkFrame = 0;
+            }
+            currentCharacterFrame = upSideFrames[1][upWalkFrame];
+            upWalkConsec++; currentFrameNum = upWalkFrame;
         }
         else if (keyHandler.downPressed)  {
             this.y += this.speed; idleFrameToLoad = 0;
@@ -59,10 +81,19 @@ public class Player extends Entity {
                 if (downSideFrames[1][downWalkFrame] == null) downWalkFrame = 0;
             }
             currentCharacterFrame = downSideFrames[1][downWalkFrame];
-            downWalkConsec++;
+            downWalkConsec++; currentFrameNum = downWalkFrame;
         }
         else if (keyHandler.leftPressed) {
-            this.x -= this.speed;
+            this.x -= this.speed; idleFrameToLoad = 0;
+
+            if (leftWalkConsec == 5) {
+                leftWalkConsec = 0;
+                leftWalkFrame++;
+                if (leftWalkFrame >= leftAnimLength) leftWalkFrame = 0;
+                if (leftSideFrames[1][leftWalkFrame] == null) leftWalkFrame = 0;
+            }
+            currentCharacterFrame = leftSideFrames[1][leftWalkFrame];
+            leftWalkConsec++; currentFrameNum = leftWalkFrame;
         }
         else if (keyHandler.rightPressed) {
             this.x += this.speed; idleFrameToLoad = 0;
@@ -74,7 +105,7 @@ public class Player extends Entity {
                 if (rightSideFrames[1][rightWalkFrame] == null) rightWalkFrame = 0;
             }
             currentCharacterFrame = rightSideFrames[1][rightWalkFrame];
-            rightWalkConsec++;
+            rightWalkConsec++; currentFrameNum = rightWalkFrame;
         }
         else {
             if (idleConsec == 12) {
@@ -82,6 +113,10 @@ public class Player extends Entity {
                 if (keyHandler.direction.equals(Config.RIGHT)) {
                     if (rightSideFrames[0][idleFrameToLoad] == null) idleFrameToLoad = 0;
                     currentCharacterFrame = rightSideFrames[0][idleFrameToLoad];
+                }
+                if (keyHandler.direction.equals(Config.LEFT)) {
+                    if (leftSideFrames[0][idleFrameToLoad] == null) idleFrameToLoad = 0;
+                    currentCharacterFrame = leftSideFrames[0][idleFrameToLoad];
                 }
                 if (keyHandler.direction.equals(Config.DOWN)) {
                     if (downSideFrames[0][idleFrameToLoad] == null) idleFrameToLoad = 0;
@@ -97,20 +132,19 @@ public class Player extends Entity {
             idleConsec++;
         }
 
-        if (idleConsec == currentIdle) {
-            idleFrameToLoad = 0; idleConsec = 0;
-        }
-        if (rightWalkConsec == currentRightWalk) {
-            rightWalkFrame = 0; rightWalkConsec = 0;
-        }
+        String locationString = Config.COORDINATE  + this.x + "%%:" + this.y + "%%:"
+                + keyHandler.direction + "%%:" + currentFrameNum;
+        sendStrToServer.println(locationString);
     }
 
-    public void moveDirection(String direction) {
-
+    protected void draw(Graphics2D g2) {
+        g2.setColor(Color.white);
+        g2.drawImage(currentCharacterFrame, this.x, this.y, null);
+        //g2.fillRect(this.x, this.y, gamePanel.tileSize, gamePanel.tileSize);
     }
 
 
-    public void loadCharacterFrames(String characterName) throws IOException, InterruptedException {
+    protected void loadCharacterFrames(String characterName) throws IOException, InterruptedException {
         final String absolutePath = "src/PlayerSprites/" + characterName;
 
         Runnable loadRightSideFrames = () -> {

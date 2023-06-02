@@ -1,19 +1,12 @@
 import javax.swing.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class PlayerTesterRunner {
+
     public static void main(String[] args) throws IOException, InterruptedException {
-        JFrame gameWindow = new JFrame();
-        gameWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        gameWindow.setResizable(false);
-
-        GamePanel screen = new GamePanel();
-        gameWindow.add(screen);
-        gameWindow.pack();
-
-        gameWindow.setLocationRelativeTo(null);
-        gameWindow.setVisible(true);
-
         /*
         JFrame frame = new JFrame();
         Player p = new Player(frame);

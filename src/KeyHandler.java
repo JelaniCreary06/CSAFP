@@ -17,6 +17,7 @@ public class KeyHandler implements KeyListener {
             case KeyEvent.VK_A -> { leftPressed = true; direction = Config.LEFT; }
             case KeyEvent.VK_D -> { rightPressed = true; direction = Config.RIGHT; }
         }
+
     }
 
     @Override

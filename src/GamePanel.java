@@ -1,6 +1,11 @@
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class GamePanel extends JPanel implements Runnable {
     static final int originalTileSize = 16, scale = 4, FPS = Config.FPS;
@@ -10,12 +15,14 @@ public class GamePanel extends JPanel implements Runnable {
     private Thread gameThread;
     private static volatile boolean gameRunning;
 
-    private KeyHandler keyHandler = new KeyHandler();
     private volatile int playerX = 100, playerY = 100, playerSpeed = 4;
 
-    private Player player = new Player(this, keyHandler);
+    private Player player;
+    private ArrayList<OtherPlayers> otherPlayers;
 
-    public GamePanel() throws IOException, InterruptedException {
+    public GamePanel(ArrayList<OtherPlayers> otherPlayers, String character, Socket socket, KeyHandler keyHandler) throws IOException, InterruptedException {
+        player = new Player(character, socket, this, keyHandler);
+        this.otherPlayers = otherPlayers;
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
@@ -57,6 +64,9 @@ public class GamePanel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D)g;
+        for (OtherPlayers plr : otherPlayers) {
+            plr.draw(g2);
+        }
         player.draw(g2);
         g2.dispose();
     }
