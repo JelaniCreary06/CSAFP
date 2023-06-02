@@ -1,5 +1,3 @@
-import javax.lang.model.type.ArrayType;
-import javax.swing.*;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -7,21 +5,16 @@ import java.util.*;
 
 public class ServerHandler extends Thread {
     private int port;
-    private GamePanel gamePanel;
 
-    Map<Socket, Player> connectedUsers = new Hashtable<>();
-    List<Player> playerList = new ArrayList();
+    Map<String, String> connectedUsers = new Hashtable<>();
+    List<Socket> socketList = new ArrayList();
 
     public ServerHandler(int port) {
         this.port = port;
     }
 
-    public Map<Socket, Player> getConnectedUsers() {
+    public Map<String, String> getConnectedUsers() {
         return this.connectedUsers;
-    }
-
-    public ArrayList<Player> getPlayerList() {
-        return (ArrayList<Player>) this.playerList;
     }
 
     /*
@@ -56,53 +49,56 @@ public class ServerHandler extends Thread {
         return str.substring(str.indexOf(Config.INDENT_PREFIX)+1);
     }
 
-    public void stringReceived(String str, Socket currentSocket) throws IOException, InterruptedException {
+
+    public void stringReceived(Socket sentFrom, String str) {
         if (getCommand(str).equals(getCommand(Config.NEW_CLIENT))) {
-            Player toAdd = new Player(gamePanel);
-            this.connectedUsers.put(currentSocket, toAdd);
-            this.playerList.add(toAdd);
+            sendToOtherClients(sentFrom, Config.NEW_CLIENT + sentFrom.getInetAddress());
         }
         if (getCommand(str).equals(getCommand(Config.NEW_MESSAGE))) {
             System.out.println("[Server]" + getData(str));
         }
-        if (getCommand(str).equals(getCommand(Config.KEY_INPUT))) {
-            connectedUsers.get(currentSocket).updateDirection(getData(str));
+        if (getCommand(str).equals(getCommand(Config.COORDINATE))) {
+            sendToOtherClients(sentFrom, getData(str));
+        }
+    }
+
+    public void sendToOtherClients(Socket sentFrom, String str) {
+        for (Socket socket : socketList) {
+            if (socket != sentFrom) {
+                try (PrintWriter sendClientStr = new PrintWriter(socket.getOutputStream(), true)){
+                    sendClientStr.println(socket.getInetAddress() + "]" + Config.COORDINATE + str);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
     }
     @Override
     public void run() {
         Runnable setupServer = () -> {
             try (ServerSocket serverSocket = new ServerSocket(this.port)) {
-                MainRunner.connectedToServer[0] = true;
-                gamePanel = new GamePanel((Hashtable<Socket, Player>) this.connectedUsers, (ArrayList<Player>) this.playerList);
-
-                JFrame gameWindow = new JFrame();
-                gameWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                gameWindow.setResizable(false);
-
-                gameWindow.add(gamePanel);
-                gameWindow.pack();
-
-                gameWindow.setLocationRelativeTo(null);
-                gameWindow.setVisible(true);
                 while (true) {
-                    Socket currentSocket = serverSocket.accept();
+                    Socket socket = serverSocket.accept();
+
+                    connectedUsers.put(socket.getInetAddress().getHostAddress(), "");
+                    socketList.add(socket);
+                    MainRunner.connectedToServer[0] = true;
 
                     Runnable clientInteractions = () -> {
                         try {
-                                BufferedReader strFromClient = new BufferedReader(new InputStreamReader(currentSocket.getInputStream()));
-                                PrintWriter sendClientStr = new PrintWriter(currentSocket.getOutputStream(), true);
+                                BufferedReader strFromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                                PrintWriter sendClientStr = new PrintWriter(socket.getOutputStream(), true);
 
-                                ObjectInputStream objFromClient = new ObjectInputStream(currentSocket.getInputStream());
-                                ObjectOutputStream sendClientObj = new ObjectOutputStream(currentSocket.getOutputStream());
+                                ObjectInputStream objFromClient = new ObjectInputStream(socket.getInputStream());
+                                ObjectOutputStream sendClientObj = new ObjectOutputStream(socket.getOutputStream());
 
                                 Runnable strReceived = () -> {
                                     while (true) {
                                         try {
                                             String receivedStr = strFromClient.readLine();
 
-                                            stringReceived(receivedStr, currentSocket);
-                                        } catch (IOException | InterruptedException e) {
+                                            stringReceived(socket, receivedStr);
+                                        } catch (IOException e) {
                                             throw new RuntimeException(e);
                                         }
                                     }
