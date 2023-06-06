@@ -12,6 +12,7 @@ public class MainRunner {
     public static JFrame gameWindow = new JFrame();
     public static ArrayList<OtherPlayers> otherPlayers = new ArrayList();
     public static void main(String[]args) throws InterruptedException, IOException {
+        /*
         String clientName[] = {""};
         new ClientSetupForm(clientName);
 
@@ -70,9 +71,11 @@ public class MainRunner {
         System.out.println("Connected to server.");
 
 
+         */
+
 
         KeyHandler keyHandler = new KeyHandler();
-        GamePanel screen = new GamePanel((ArrayList<OtherPlayers>) otherPlayers, "Warrior", thisClientConnection,  keyHandler);
+        GamePanel screen = new GamePanel((ArrayList<OtherPlayers>) otherPlayers, "Warrior",  keyHandler);
 
 
         gameWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

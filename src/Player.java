@@ -32,8 +32,8 @@ public class Player extends Entity {
         loadCharacterFrames(character);
 
     }
-    public Player(String character, ClientHandler clientHandler, GamePanel gamePanel, KeyHandler keyHandler) throws IOException, InterruptedException {
-        this.gamePanel = gamePanel; this.keyHandler = keyHandler; this.clientHandler = clientHandler;
+    public Player(String character,  GamePanel gamePanel, KeyHandler keyHandler) throws IOException, InterruptedException {
+        this.gamePanel = gamePanel; this.keyHandler = keyHandler;
         this.x = 100; this.y = 100; this.speed = 5;
         this.character = character;
 
@@ -131,14 +131,13 @@ public class Player extends Entity {
             idleConsec++;
         }
 
-        String locationString = Config.COORDINATE  + this.x + "%%:" + this.y + "%%:"
-                + keyHandler.direction + "%%:" + currentFrameNum;
-        clientHandler.toServer[0].println(locationString);
+        //String locationString = Config.COORDINATE  + this.x + "%%:" + this.y + "%%:"+ keyHandler.direction + "%%:" + currentFrameNum;clientHandler.toServer[0].println(locationString);
     }
 
     protected void draw(Graphics2D g2) {
         g2.setColor(Color.white);
         g2.drawImage(currentCharacterFrame, this.x, this.y, null);
+        g2.drawImage(currentCharacterFrame, this.x + 100, this.y, null);
         //g2.fillRect(this.x, this.y, gamePanel.tileSize, gamePanel.tileSize);
     }
 

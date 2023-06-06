@@ -20,9 +20,10 @@ public class GamePanel extends JPanel implements Runnable {
 
     private ArrayList<OtherPlayers> otherPlayers;
 
-    public GamePanel(ArrayList<OtherPlayers> otherPlayers, String character, ClientHandler clientHandler, KeyHandler keyHandler) throws IOException, InterruptedException {
-        this.player = new Player(character, clientHandler, this, keyHandler);
+    public GamePanel(ArrayList<OtherPlayers> otherPlayers, String character, KeyHandler keyHandler) throws IOException, InterruptedException {
+        this.player = new Player(character,  this, keyHandler);
         this.otherPlayers = otherPlayers;
+        otherPlayers.add(new OtherPlayers("Warrior"));
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
@@ -69,7 +70,7 @@ public class GamePanel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D)g;
-        for (OtherPlayers plr : otherPlayers) plr.draw(g2);
+        for (OtherPlayers plr : otherPlayers)  g2.drawImage(plr.currentCharacterFrame, plr.x + 200, plr.y, null);
         player.draw(g2);
         g2.dispose();
     }
