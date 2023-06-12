@@ -3,7 +3,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
 
-public class ServerHandler extends Thread {
+public class  ServerHandler extends Thread {
     private int port;
 
     static Map<String, String> connectedUsers = new Hashtable<>();
@@ -93,13 +93,16 @@ public class ServerHandler extends Thread {
                 System.out.println("[Server]" + getData(str));
             }
             if (getCommand(str).equals(getCommand(Config.COORDINATE))) {
-                sendToOtherClients(sentFrom, getData(str));
+                sendToOtherClients(sentFrom, sentFrom.socket.getInetAddress() + "]" + Config.COORDINATE + str);
+            }
+            if (getCommand(str).equals(getCommand(Config.NEW_CLIENT))) {
+                sendToOtherClients(sentFrom, Config.NEW_CLIENT + sentFrom.socket.getInetAddress());
             }
         }
 
         public void sendToOtherClients(ServerThread sentFrom, String str) {
             for (ServerThread serverThread : serverThreadList) {
-                if (!serverThread.equals(sentFrom)) serverThread.toClient.println(serverThread.socket.getInetAddress() + "]" + Config.COORDINATE + str);
+                if (!serverThread.equals(sentFrom)) serverThread.toClient.println(str);
             }
         }
 

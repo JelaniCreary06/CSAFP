@@ -3,14 +3,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.security.Key;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
+
 public class MainRunner {
     public static boolean connectedToServer[] = { false };
     public static JFrame gameWindow = new JFrame();
-    public static ArrayList<OtherPlayers> otherPlayers = new ArrayList();
+    public static Hashtable<String, OtherPlayers> otherPlayers = new Hashtable();
     public static void main(String[]args) throws InterruptedException, IOException {
         String clientName[] = {""};
         new ClientSetupForm(clientName);
@@ -71,7 +69,7 @@ public class MainRunner {
 
 
         KeyHandler keyHandler = new KeyHandler();
-        GamePanel screen = new GamePanel((ArrayList<OtherPlayers>) otherPlayers, "Warrior", thisClientConnection,  keyHandler);
+        GamePanel screen = new GamePanel(otherPlayers, "Warrior", thisClientConnection,  keyHandler);
 
 
         gameWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

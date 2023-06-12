@@ -10,16 +10,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Scanner;
+import java.util.*;
 
 public class ClientHandler extends Thread {
     private Socket socket;
     private String clientName;
     private String host;
-    private ArrayList<OtherPlayers> otherPlayers;
+    private Hashtable<String, OtherPlayers> otherPlayers;
     int port;
 
     PrintWriter[] toServer = new PrintWriter[]{null};
@@ -61,7 +58,7 @@ public class ClientHandler extends Thread {
                 objectsToServer[0] = new ObjectOutputStream(this.socket.getOutputStream());
                 PrintWriter sendServerStr = toServer[0];
                 ObjectOutputStream sendServerObj = objectsToServer[0];
-                sendServerStr.println("{CLIENT_NEW::}" + this.clientName);
+                sendServerStr.println("{CLIENT_NEW::}" + socket.getInetAddress());
                 new Scanner(System.in);
             } catch (Exception var6) {
                 String var10001 = this.host;
@@ -81,32 +78,27 @@ public class ClientHandler extends Thread {
                     strReceived = strFromServer.readLine();
 
                     if (strReceived.indexOf("{LOCATION::NEW}") != 0) {
-                        Iterator var6 = this.otherPlayers.iterator();
-                        if (var6.hasNext()) {
-                            OtherPlayers plr = (OtherPlayers)var6.next();
-                            if (plr.getInetAddress().equals(strReceived.substring(0, strReceived.indexOf("]")))) {
+                        OtherPlayers plr = otherPlayers.get(strReceived.substring(0, strReceived.indexOf("]")));
+
                                 String[] split = strReceived.substring(strReceived.indexOf("{LOCATION::NEW}") + 1).split("%%:");
                                 plr.setCoordinates(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
                                 plr.updateFrame(split[2], Integer.parseInt(split[3]));
-                            }
-                        }
                     }
 
-                    if (strReceived.indexOf("{CLIENT_NEW::}") != 0) {
+                    if (strReceived.indexOf("{CLIENT_NEW::}") != 0 && otherPlayers.get(strReceived.replace(Config.NEW_CLIENT, "")) != null) {
                         OtherPlayers newPlr = new OtherPlayers("Warrior", this.getData(strReceived));
-                        this.otherPlayers.add(newPlr);
+                        this.otherPlayers.put(strReceived.replace(Config.NEW_CLIENT, ""), newPlr);
+                    }
+                    strReceived = "";
                     }
 
-                    strReceived = "";
-                }
-            } catch (IOException var9) {
-                String var10001 = this.host;
-                System.out.println("ErrorReadingStringFromServer:" + var10001 + ":" + this.port + "::" + Arrays.toString(var9.getStackTrace()));
-            } catch (InterruptedException var10) {
-                throw new RuntimeException(var10);
+                } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         };
-        (new Thread(sendToServer)).start();
-        (new Thread(recieveFromServer)).start();
+        new Thread(sendToServer).start();
+        new Thread(recieveFromServer).start();
     }
 }

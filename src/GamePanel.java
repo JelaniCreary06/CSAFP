@@ -4,6 +4,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 public class GamePanel extends JPanel implements Runnable {
     static final int originalTileSize = 16, scale = 4, FPS = Config.FPS;
@@ -18,12 +19,12 @@ public class GamePanel extends JPanel implements Runnable {
 
     private Player player;
 
-    private ArrayList<OtherPlayers> otherPlayers;
+    private Hashtable<String, OtherPlayers> otherPlayers;
 
-    public GamePanel(ArrayList<OtherPlayers> otherPlayers, String character, ClientHandler clientHandler, KeyHandler keyHandler) throws IOException, InterruptedException {
+    public GamePanel(Hashtable<String, OtherPlayers> otherPlayers, String character, ClientHandler clientHandler, KeyHandler keyHandler) throws IOException, InterruptedException {
         this.player = new Player(character, clientHandler, this, keyHandler);
         this.otherPlayers = otherPlayers;
-        otherPlayers.add(new OtherPlayers("Warrior"));
+        otherPlayers.put("def", new OtherPlayers("Warrior"));
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
@@ -70,7 +71,9 @@ public class GamePanel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D)g;
-        for (OtherPlayers plr : otherPlayers)  g2.drawImage(plr.currentCharacterFrame, plr.x, plr.y, null);
+        otherPlayers.forEach( (k,v) -> {
+            g2.drawImage(v.currentCharacterFrame, v.x, v.y, null);
+        });
         player.draw(g2);
         g2.dispose();
     }
